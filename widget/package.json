@@ -1,0 +1,22 @@
+{
+  "name": "kkw",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "build": "node build.mjs",
+    "test": "jest"
+  },
+  "devDependencies": {
+    "esbuild": "^0.24.0",
+    "@jest/globals": "^29.0.0",
+    "@types/jest": "^29.0.0",
+    "jest": "^29.0.0",
+    "ts-jest": "^29.0.0",
+    "typescript": "^5.7.0"
+  },
+  "jest": {
+    "preset": "ts-jest",
+    "testEnvironment": "node",
+    "testMatch": ["**/*.test.ts"]
+  }
+}
