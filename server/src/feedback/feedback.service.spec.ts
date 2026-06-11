@@ -61,6 +61,15 @@ describe('FeedbackService', () => {
   it('inserts and fires notification on valid submission', async () => {
     await service.submit(baseDto, '1.2.3.4');
     expect(prisma.$queryRaw).toHaveBeenCalledTimes(1);
+    const [, ...args] = (prisma.$queryRaw as jest.Mock).mock.calls[0];
+    expect(args).toEqual([
+      'colorpage', 'bug', 'Something broke', null,
+      expect.anything(), // Prisma.DbNull for user_ctx
+      expect.anything(), // Prisma.DbNull for context
+      expect.anything(), // Prisma.DbNull for console_logs
+      expect.anything(), // Prisma.DbNull for errors
+      '1.2.3.4',
+    ]);
     await new Promise(r => setTimeout(r, 0));
     expect(notification.notify).toHaveBeenCalledWith(
       expect.objectContaining({ project: 'colorpage', type: 'bug' }),

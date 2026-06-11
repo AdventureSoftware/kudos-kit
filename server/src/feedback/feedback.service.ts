@@ -1,4 +1,5 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 import { PrismaIngestService } from '../prisma/prisma-ingest.service';
 import { TurnstileService } from './turnstile.service';
 import { NotificationService } from './notification.service';
@@ -28,10 +29,10 @@ export class FeedbackService {
       INSERT INTO feedback (project, type, message, email, user_ctx, context, console_logs, errors, ip)
       VALUES (
         ${dto.project}, ${dto.type}, ${dto.message}, ${dto.email ?? null},
-        ${dto.user ? JSON.stringify(dto.user) : null}::jsonb,
-        ${dto.context ? JSON.stringify(dto.context) : null}::jsonb,
-        ${dto.console ? JSON.stringify(dto.console) : null}::jsonb,
-        ${dto.errors ? JSON.stringify(dto.errors) : null}::jsonb,
+        ${dto.user ? JSON.stringify(dto.user) : Prisma.DbNull}::jsonb,
+        ${dto.context ? JSON.stringify(dto.context) : Prisma.DbNull}::jsonb,
+        ${dto.console ? JSON.stringify(dto.console) : Prisma.DbNull}::jsonb,
+        ${dto.errors ? JSON.stringify(dto.errors) : Prisma.DbNull}::jsonb,
         ${ip}::inet
       )
       RETURNING id
