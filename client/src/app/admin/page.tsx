@@ -11,7 +11,7 @@ export default async function AdminPage({
   const params = await searchParams;
   const project = params.project ?? '';
   const status = params.status ?? '';
-  const page = parseInt(params.page ?? '1', 10);
+  const page = Math.max(1, parseInt(params.page ?? '1', 10) || 1);
   const offset = (page - 1) * PAGE_SIZE;
 
   const conditions: string[] = [];
@@ -22,7 +22,8 @@ export default async function AdminPage({
 
   const [rowsResult, countResult, projectsResult] = await Promise.all([
     query<FeedbackRow>(
-      `SELECT * FROM feedback ${where} ORDER BY created_at DESC LIMIT ${PAGE_SIZE} OFFSET ${offset}`,
+      `SELECT id, project, type, message, email, user_ctx, context, status, ip, created_at
+       FROM feedback ${where} ORDER BY created_at DESC LIMIT ${PAGE_SIZE} OFFSET ${offset}`,
       values,
     ),
     query<{ count: string }>(`SELECT COUNT(*)::text as count FROM feedback ${where}`, values),
@@ -64,6 +65,7 @@ export default async function AdminPage({
           <tr style={{ borderBottom: '2px solid #e5e5e5', textAlign: 'left' }}>
             <th style={{ padding: '8px 12px' }}>Type</th>
             <th style={{ padding: '8px 12px' }}>Project</th>
+            <th style={{ padding: '8px 12px' }}>Email</th>
             <th style={{ padding: '8px 12px' }}>Message</th>
             <th style={{ padding: '8px 12px' }}>Status</th>
             <th style={{ padding: '8px 12px' }}>Created</th>
@@ -85,11 +87,14 @@ export default async function AdminPage({
                 </span>
               </td>
               <td style={{ padding: '8px 12px', color: '#666' }}>{row.project}</td>
+              <td style={{ padding: '8px 12px', color: '#666', fontSize: 12 }}>
+                {row.email ?? '—'}
+              </td>
               <td style={{ padding: '8px 12px', maxWidth: 300 }}>
                 <span title={row.message}>{row.message.slice(0, 80)}{row.message.length > 80 ? '…' : ''}</span>
               </td>
               <td style={{ padding: '8px 12px' }}>
-                <form action={toggleStatusAction.bind(null, row.id, row.status)}>
+                <form action={toggleStatusAction.bind(null, row.id)}>
                   <button type="submit" style={{
                     padding: '2px 8px', fontSize: 11, borderRadius: 4, cursor: 'pointer', border: '1px solid #ccc',
                     background: row.status === 'new' ? '#fef9c3' : row.status === 'triaged' ? '#dbeafe' : '#dcfce7',
@@ -119,7 +124,7 @@ export default async function AdminPage({
             </tr>
           ))}
           {rows.length === 0 && (
-            <tr><td colSpan={8} style={{ padding: '32px', textAlign: 'center', color: '#999' }}>No feedback yet</td></tr>
+            <tr><td colSpan={9} style={{ padding: '32px', textAlign: 'center', color: '#999' }}>No feedback yet</td></tr>
           )}
         </tbody>
       </table>

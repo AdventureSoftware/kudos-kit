@@ -8,7 +8,13 @@ export { logoutAction };
 
 const STATUS_CYCLE = { new: 'triaged', triaged: 'done', done: 'new' } as const;
 
-export async function toggleStatusAction(id: string, current: 'new' | 'triaged' | 'done'): Promise<void> {
+export async function toggleStatusAction(id: string): Promise<void> {
+  const result = await query<{ status: 'new' | 'triaged' | 'done' }>(
+    'SELECT status FROM feedback WHERE id = $1',
+    [id],
+  );
+  const current = result.rows[0]?.status;
+  if (!current) return;
   const next = STATUS_CYCLE[current];
   await query('UPDATE feedback SET status = $1 WHERE id = $2', [next, id]);
   revalidatePath('/admin');

@@ -1,19 +1,18 @@
 'use server'
 
-import { timingSafeEqual } from 'crypto';
+import { createHmac, timingSafeEqual } from 'crypto';
 import { redirect } from 'next/navigation';
 import { createSession, deleteSession } from '@/lib/auth';
 
 export async function loginAction(formData: FormData): Promise<void> {
   const password = formData.get('password');
   const expected = process.env.ADMIN_PASSWORD;
-  if (
-    typeof password !== 'string' ||
-    !expected ||
-    password.length !== expected.length ||
-    !timingSafeEqual(Buffer.from(password), Buffer.from(expected))
-  ) {
-    // Redirect back to login with an error indicator
+  if (typeof password !== 'string' || !expected) {
+    redirect('/login?error=1');
+  }
+  const a = createHmac('sha256', 'kkw-pw-check').update(password).digest();
+  const b = createHmac('sha256', 'kkw-pw-check').update(expected).digest();
+  if (!timingSafeEqual(a, b)) {
     redirect('/login?error=1');
   }
   await createSession();
