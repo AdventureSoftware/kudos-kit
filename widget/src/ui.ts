@@ -187,6 +187,10 @@ export class FeedbackUI {
     return this.panel?.querySelector<HTMLElement>('#kkw-turnstile') ?? null;
   }
 
+  getSubmitButton(): HTMLButtonElement | null {
+    return this.panel?.querySelector<HTMLButtonElement>('.kkw-submit') ?? null;
+  }
+
   togglePanel(): void { this.visible ? this.hidePanel() : this.showPanel(); }
 
   showPanel(): void {

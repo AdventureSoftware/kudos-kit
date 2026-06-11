@@ -26,6 +26,7 @@ function isVisible(): boolean { return ui?.isVisible() ?? false; }
 function show(): void {
   if (!ui) return;
   ui.showButton();
+  ui.showPanel();
   emit('visibilitychange', true);
 }
 
@@ -126,8 +127,7 @@ export function init(cfg: FeedbackConfig): void {
   ui = new FeedbackUI(cfg);
   ui.mount();
 
-  const submitBtn = document.querySelector<HTMLButtonElement>('.kkw-submit');
-  submitBtn?.addEventListener('click', submitFeedback);
+  ui.getSubmitButton()?.addEventListener('click', submitFeedback);
 
   if (cfg.startHidden) hide();
 
