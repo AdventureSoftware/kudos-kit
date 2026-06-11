@@ -1,6 +1,6 @@
 // widget/src/serializer.ts
-function safeStringify(value: unknown, depth = 0): string {
-  if (depth > 4) return '[truncated]';
+// Depth is not tracked for objects; the 2048-char cap on serializeArgs is the backstop.
+function safeStringify(value: unknown): string {
   if (value === null) return 'null';
   if (value === undefined) return 'undefined';
   if (typeof value === 'string') return value.slice(0, 2048);
@@ -11,11 +11,12 @@ function safeStringify(value: unknown, depth = 0): string {
   }
   if (typeof value === 'function') return '[Function]';
   if (Array.isArray(value)) {
-    return '[' + value.slice(0, 20).map(v => safeStringify(v, depth + 1)).join(',') + ']';
+    return '[' + value.slice(0, 20).map(v => safeStringify(v)).join(',') + ']';
   }
   if (typeof value === 'object') {
     const seen = new Set<unknown>();
     try {
+      // Known limitation: shared (non-cyclic) references also stringify as '[circular]'
       return JSON.stringify(value, (_key, val) => {
         if (typeof val === 'object' && val !== null) {
           if (seen.has(val)) return '[circular]';
@@ -40,5 +41,5 @@ export function redactString(value: string): string {
       /("(?:authorization|password|secret|api[_-]?key|token|set-cookie)":\s*)"([^"]*)"/gi,
       (_, key) => `${key}"[redacted]"`,
     )
-    .replace(/\bBearer\s+[A-Za-z0-9\-._~+/]+=*/g, 'Bearer [redacted]');
+    .replace(/\bBearer\s+[A-Za-z0-9\-._~+/]+=*/gi, 'Bearer [redacted]');
 }

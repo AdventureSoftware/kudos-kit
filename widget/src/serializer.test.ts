@@ -46,4 +46,10 @@ describe('redactString', () => {
     expect(redactString(input)).toContain('Bearer [redacted]');
     expect(redactString(input)).not.toContain('eyJhbGciOiJSUzI1NiJ9');
   });
+
+  it('redacts lowercase bearer tokens', () => {
+    const input = 'bearer eyJhbGciOiJSUzI1NiJ9.payload.sig';
+    expect(redactString(input)).toContain('Bearer [redacted]');
+    expect(redactString(input)).not.toContain('eyJhbGciOiJSUzI1NiJ9');
+  });
 });
