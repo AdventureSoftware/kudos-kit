@@ -1,12 +1,9 @@
-// server/src/config/configuration.ts
 export default () => ({
   port: parseInt(process.env.PORT || '3000', 10),
   database: {
     host: process.env.DB_HOST || 'localhost',
     port: parseInt(process.env.DB_PORT || '5432', 10),
     name: process.env.DB_NAME ?? 'feedback',
-    user: process.env.DB_INGEST_USER ?? 'feedback_ingest',
-    password: process.env.DB_INGEST_PASSWORD ?? '',
   },
   turnstile: {
     secret: process.env.TURNSTILE_SECRET ?? '',
@@ -17,4 +14,6 @@ export default () => ({
     toEmail: process.env.BREVO_TO_EMAIL ?? '',
   },
   adminUrl: process.env.ADMIN_URL ?? 'http://localhost:3001',
+  adminPassword: process.env.ADMIN_PASSWORD ?? '',
+  jwtSecret: process.env.JWT_SECRET ?? 'dev-secret-change-in-prod',
 });
