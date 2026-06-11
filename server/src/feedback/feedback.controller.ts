@@ -5,7 +5,7 @@ import { FeedbackService } from './feedback.service';
 
 @Controller('v1')
 export class FeedbackController {
-  constructor(private feedbackService: FeedbackService) {}
+  constructor(private readonly feedbackService: FeedbackService) {}
 
   @Post('feedback')
   @HttpCode(HttpStatus.CREATED)
