@@ -1,25 +1,32 @@
-'use server'
+'use server';
 
-import { createHmac, timingSafeEqual } from 'crypto';
+import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
-import { createSession, deleteSession } from '@/lib/auth';
 
-export async function loginAction(formData: FormData): Promise<void> {
-  const password = formData.get('password');
-  const expected = process.env.ADMIN_PASSWORD;
-  if (typeof password !== 'string' || !expected) {
-    redirect('/login?error=1');
+const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3000';
+
+export async function loginAction(formData: FormData): Promise<{ error?: string }> {
+  const password = formData.get('password')?.toString() ?? '';
+
+  const res = await fetch(`${API_URL}/v1/admin/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ password }),
+  });
+
+  if (!res.ok) {
+    return { error: 'Invalid password' };
   }
-  const a = createHmac('sha256', 'kkw-pw-check').update(password).digest();
-  const b = createHmac('sha256', 'kkw-pw-check').update(expected).digest();
-  if (!timingSafeEqual(a, b)) {
-    redirect('/login?error=1');
-  }
-  await createSession();
+
+  const { token } = (await res.json()) as { token: string };
+  const jar = await cookies();
+  jar.set('admin_token', token, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'strict',
+    path: '/',
+    maxAge: 60 * 60 * 24,
+  });
+
   redirect('/admin');
-}
-
-export async function logoutAction(): Promise<void> {
-  await deleteSession();
-  redirect('/login');
 }
