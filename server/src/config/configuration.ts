@@ -14,6 +14,14 @@ export default () => ({
     toEmail: process.env.BREVO_TO_EMAIL ?? '',
   },
   adminUrl: process.env.ADMIN_URL ?? 'http://localhost:3001',
-  adminPassword: process.env.ADMIN_PASSWORD ?? '',
-  jwtSecret: process.env.JWT_SECRET ?? 'dev-secret-change-in-prod',
+  adminPassword: (() => {
+    const p = process.env.ADMIN_PASSWORD;
+    if (!p && process.env.NODE_ENV !== 'test') throw new Error('ADMIN_PASSWORD must be set');
+    return p ?? '';
+  })(),
+  jwtSecret: (() => {
+    const s = process.env.JWT_SECRET;
+    if ((!s || s.length < 32) && process.env.NODE_ENV !== 'test') throw new Error('JWT_SECRET must be set (>=32 chars)');
+    return s ?? 'test-only-secret-not-for-production-use';
+  })(),
 });

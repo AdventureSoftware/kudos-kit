@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { ServeStaticModule } from '@nestjs/serve-static';
+import { ThrottlerModule } from '@nestjs/throttler';
 import { join } from 'path';
 import { FeedbackModule } from './feedback/feedback.module';
 import { PrismaModule } from './prisma/prisma.module';
@@ -10,6 +11,7 @@ import configuration from './config/configuration';
 @Module({
   imports: [
     ConfigModule.forRoot({ load: [configuration], isGlobal: true }),
+    ThrottlerModule.forRoot([{ ttl: 900_000, limit: 5 }]),
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '..', 'public'),
       serveRoot: '/',

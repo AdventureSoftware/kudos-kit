@@ -12,6 +12,7 @@ export class AuthService {
 
   async login(password: string): Promise<{ token: string }> {
     const expected = this.config.get<string>('adminPassword') ?? '';
+    if (!expected) throw new UnauthorizedException();
     const a = createHmac('sha256', 'kkw-pw').update(password).digest();
     const b = createHmac('sha256', 'kkw-pw').update(expected).digest();
     if (a.length !== b.length || !timingSafeEqual(a, b)) {
