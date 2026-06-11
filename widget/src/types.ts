@@ -30,7 +30,7 @@ export interface FeedbackConfig {
     max: number;
     maxBytes: number;
     redact: boolean;
-    sendOn: string[];
+    sendOn: Array<'bug' | 'idea' | 'other'>;
   };
 }
 

@@ -9,9 +9,7 @@ let ui: FeedbackUI | null = null;
 let capture: ConsoleCapture | null = null;
 let config: FeedbackConfig | null = null;
 let listeners: Record<string, Array<(v: unknown) => void>> = {};
-// turnstileWidgetId reserved for future use (inline render does not return an id in this version)
-let turnstileWidgetId: string | null = null; // eslint-disable-line @typescript-eslint/no-unused-vars
-void turnstileWidgetId;
+let turnstileWidgetId: string | null = null;
 
 function on(event: string, cb: (v: unknown) => void): void {
   (listeners[event] ??= []).push(cb);
@@ -57,14 +55,23 @@ async function submitFeedback(): Promise<void> {
     turnstileToken = await new Promise<string>((resolve, reject) => {
       const container = ui!.getTurnstileContainer();
       if (!container) return reject(new Error('No Turnstile container'));
-      (window as any).turnstile.render(container, {
+      if (!(window as any).turnstile) return reject(new Error('Turnstile not loaded'));
+      // Clean up any previous widget before rendering a new one
+      if (turnstileWidgetId !== null) {
+        (window as any).turnstile.remove(turnstileWidgetId);
+        turnstileWidgetId = null;
+      }
+      turnstileWidgetId = (window as any).turnstile.render(container, {
         sitekey: config!.turnstileSiteKey,
         callback: resolve,
         'error-callback': reject,
       });
     });
-  } catch {
-    ui.showMessage('CAPTCHA failed. Please try again.', true);
+  } catch (err) {
+    const msg = (err as Error).message === 'Turnstile not loaded'
+      ? 'Please wait a moment and try again.'
+      : 'CAPTCHA failed. Please try again.';
+    ui.showMessage(msg, true);
     ui.setSubmitState(false);
     return;
   }

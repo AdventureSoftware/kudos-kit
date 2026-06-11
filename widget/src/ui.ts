@@ -5,18 +5,21 @@ export class FeedbackUI {
   private container: HTMLDivElement | null = null;
   private button: HTMLButtonElement | null = null;
   private panel: HTMLDivElement | null = null;
+  private styleEl: HTMLStyleElement | null = null;
   private visible = false;
 
   constructor(private config: FeedbackConfig) {}
 
   mount(): void {
-    const accent = this.config.theme?.accent ?? '#111111';
-    const textOnAccent = this.config.theme?.text ?? '#ffffff';
+    // Sanitize theme values before CSS interpolation
+    const sanitizeCss = (v: string) => v.replace(/[{};'"\\<>]/g, '');
+    const accent = sanitizeCss(this.config.theme?.accent ?? '#111111');
+    const textOnAccent = sanitizeCss(this.config.theme?.text ?? '#ffffff');
     const pos = this.config.position ?? 'bottom-right';
     const offset = this.config.offset ?? {};
 
-    const style = document.createElement('style');
-    style.textContent = `
+    this.styleEl = document.createElement('style');
+    this.styleEl.textContent = `
       .kkw-btn {
         position: fixed; z-index: 2147483000;
         background: ${accent}; color: ${textOnAccent};
@@ -57,7 +60,7 @@ export class FeedbackUI {
       .kkw-msg { font-size: 12px; margin-top: 8px; }
       .kkw-privacy { font-size: 11px; color: #999; margin-top: 8px; }
     `;
-    document.head.appendChild(style);
+    document.head.appendChild(this.styleEl);
 
     this.button = document.createElement('button');
     this.button.className = 'kkw-btn';
@@ -211,6 +214,8 @@ export class FeedbackUI {
     this.container = null;
     this.button = null;
     this.panel = null;
+    this.styleEl?.remove();
+    this.styleEl = null;
     this.visible = false;
   }
 }
