@@ -1,26 +1,17 @@
-'use server'
+'use server';
 
 import { revalidatePath } from 'next/cache';
-import { query } from '@/lib/db';
-import { logoutAction } from '../login/actions';
+import { redirect } from 'next/navigation';
+import { apiFetch } from '@/lib/auth';
 
-export { logoutAction };
-
-const STATUS_CYCLE = { new: 'triaged', triaged: 'done', done: 'new' } as const;
-
-export async function toggleStatusAction(id: string): Promise<void> {
-  const result = await query<{ status: 'new' | 'triaged' | 'done' }>(
-    'SELECT status FROM feedback WHERE id = $1',
-    [id],
-  );
-  const current = result.rows[0]?.status;
-  if (!current) return;
-  const next = STATUS_CYCLE[current];
-  await query('UPDATE feedback SET status = $1 WHERE id = $2', [next, id]);
+export async function cycleStatus(id: string): Promise<void> {
+  const res = await apiFetch(`/v1/admin/feedback/${id}/status`, { method: 'PATCH' });
+  if (res.status === 401) redirect('/login');
   revalidatePath('/admin');
 }
 
-export async function deleteRowAction(id: string): Promise<void> {
-  await query('DELETE FROM feedback WHERE id = $1', [id]);
+export async function deleteFeedback(id: string): Promise<void> {
+  const res = await apiFetch(`/v1/admin/feedback/${id}`, { method: 'DELETE' });
+  if (res.status === 401) redirect('/login');
   revalidatePath('/admin');
 }
