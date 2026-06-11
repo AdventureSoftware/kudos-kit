@@ -17,6 +17,9 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
       user: this.config.get('database.user'),
       password: this.config.get('database.password'),
     });
+    this.pool.on('error', (err) => {
+      console.error('Idle pg client error', err);
+    });
   }
 
   async onModuleDestroy(): Promise<void> {
