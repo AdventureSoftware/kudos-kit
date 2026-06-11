@@ -9,7 +9,7 @@ export class PrismaIngestService extends PrismaClient implements OnModuleInit, O
     const name = process.env.DB_NAME ?? 'feedback';
     const user = process.env.DB_INGEST_USER ?? 'feedback_ingest';
     const pass = process.env.DB_INGEST_PASSWORD ?? '';
-    super({ datasources: { db: { url: `postgresql://${user}:${pass}@${host}:${port}/${name}` } } });
+    super({ datasources: { db: { url: `postgresql://${encodeURIComponent(user)}:${encodeURIComponent(pass)}@${host}:${port}/${name}` } } });
   }
 
   async onModuleInit(): Promise<void> { await this.$connect(); }

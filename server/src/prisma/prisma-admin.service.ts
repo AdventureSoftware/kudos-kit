@@ -9,7 +9,7 @@ export class PrismaAdminService extends PrismaClient implements OnModuleInit, On
     const name = process.env.DB_NAME ?? 'feedback';
     const user = process.env.DB_ADMIN_USER ?? 'feedback_admin';
     const pass = process.env.DB_ADMIN_PASSWORD ?? '';
-    super({ datasources: { db: { url: `postgresql://${user}:${pass}@${host}:${port}/${name}` } } });
+    super({ datasources: { db: { url: `postgresql://${encodeURIComponent(user)}:${encodeURIComponent(pass)}@${host}:${port}/${name}` } } });
   }
 
   async onModuleInit(): Promise<void> { await this.$connect(); }
