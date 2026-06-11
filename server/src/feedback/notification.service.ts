@@ -41,11 +41,11 @@ export class NotificationService {
       });
       if (!res.ok) {
         console.error(`Brevo notification failed: ${res.status}`);
-        return;
       }
-      this.lastSentAt = Date.now();
     } catch (err) {
       console.error('Brevo notification error', err);
+    } finally {
+      this.lastSentAt = Date.now();
     }
   }
 }
