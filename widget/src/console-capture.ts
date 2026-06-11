@@ -8,6 +8,8 @@ interface CaptureConfig {
 }
 
 export class ConsoleCapture {
+  private static readonly MAX_ERRORS = 50;
+
   private logs: ConsoleEntry[] = [];
   private errors: ErrorEntry[] = [];
   private originals: Record<string, (...args: unknown[]) => void> = {};
@@ -17,6 +19,8 @@ export class ConsoleCapture {
   constructor(private config: CaptureConfig) {}
 
   install(): void {
+    if (Object.keys(this.originals).length > 0) return;
+
     const levels = ['log', 'info', 'warn', 'error', 'debug'] as const;
     for (const level of levels) {
       this.originals[level] = console[level].bind(console);
@@ -27,6 +31,7 @@ export class ConsoleCapture {
     }
 
     this.errorHandler = (e: ErrorEvent) => {
+      if (this.errors.length >= ConsoleCapture.MAX_ERRORS) return;
       this.errors.push({
         message: e.message,
         filename: e.filename,
@@ -35,6 +40,7 @@ export class ConsoleCapture {
       });
     };
     this.rejectionHandler = (e: PromiseRejectionEvent) => {
+      if (this.errors.length >= ConsoleCapture.MAX_ERRORS) return;
       const reason = e.reason as Error | string | null;
       this.errors.push({
         message: reason instanceof Error ? reason.message : String(reason ?? 'Unhandled rejection'),
@@ -53,6 +59,8 @@ export class ConsoleCapture {
     if (this.errorHandler) window.removeEventListener('error', this.errorHandler);
     if (this.rejectionHandler) window.removeEventListener('unhandledrejection', this.rejectionHandler);
     this.originals = {};
+    this.errorHandler = null;
+    this.rejectionHandler = null;
   }
 
   getLogs(): ConsoleEntry[] {
@@ -69,16 +77,20 @@ export class ConsoleCapture {
   }
 
   private push(entry: ConsoleEntry): void {
+    if (this.logs.length >= this.config.max) this.logs.shift();
     this.logs.push(entry);
-    if (this.logs.length > this.config.max) this.logs.shift();
     this.enforceBytesCap();
   }
 
   private enforceBytesCap(): void {
-    let total = this.logs.reduce((sum, e) => sum + e.msg.length, 0);
+    const encoder = typeof TextEncoder !== 'undefined' ? new TextEncoder() : null;
+    let total = this.logs.reduce(
+      (sum, e) => sum + (encoder ? encoder.encode(e.msg).byteLength : e.msg.length),
+      0,
+    );
     while (total > this.config.maxBytes && this.logs.length > 0) {
       const removed = this.logs.shift()!;
-      total -= removed.msg.length;
+      total -= encoder ? encoder.encode(removed.msg).byteLength : removed.msg.length;
     }
   }
 

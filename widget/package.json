@@ -11,7 +11,7 @@
     "@types/jest": "^29.0.0",
     "esbuild": "^0.24.0",
     "jest": "^29.0.0",
-    "jest-environment-jsdom": "^30.4.1",
+    "jest-environment-jsdom": "^29.7.0",
     "ts-jest": "^29.0.0",
     "typescript": "^5.7.0"
   },
@@ -21,13 +21,17 @@
         "displayName": "node",
         "preset": "ts-jest",
         "testEnvironment": "node",
-        "testMatch": ["**/serializer.test.ts"]
+        "testMatch": [
+          "**/serializer.test.ts"
+        ]
       },
       {
         "displayName": "jsdom",
         "preset": "ts-jest",
         "testEnvironment": "jsdom",
-        "testMatch": ["**/console-capture.test.ts"]
+        "testMatch": [
+          "**/console-capture.test.ts"
+        ]
       }
     ]
   }
