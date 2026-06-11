@@ -3,4 +3,5 @@
 insert into projects (key, name) values
   ('colorpage', 'Colorpage'),
   ('productscene', 'ProductScene'),
-  ('bizpage', 'BizPage');
+  ('bizpage', 'BizPage')
+on conflict (key) do nothing;
