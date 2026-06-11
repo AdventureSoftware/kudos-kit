@@ -1,6 +1,4 @@
 // widget/src/serializer.ts
-const REDACT_PATTERN = /authorization|bearer\s+|password|secret|api[_-]?key|token|set-cookie/i;
-
 function safeStringify(value: unknown, depth = 0): string {
   if (depth > 4) return '[truncated]';
   if (value === null) return 'null';
@@ -37,8 +35,10 @@ export function serializeArgs(args: unknown[]): string {
 }
 
 export function redactString(value: string): string {
-  return value.replace(
-    /("(?:authorization|password|secret|api[_-]?key|token|set-cookie)":\s*)"([^"]*)"/gi,
-    (_, key) => `${key}"[redacted]"`,
-  );
+  return value
+    .replace(
+      /("(?:authorization|password|secret|api[_-]?key|token|set-cookie)":\s*)"([^"]*)"/gi,
+      (_, key) => `${key}"[redacted]"`,
+    )
+    .replace(/\bBearer\s+[A-Za-z0-9\-._~+/]+=*/g, 'Bearer [redacted]');
 }

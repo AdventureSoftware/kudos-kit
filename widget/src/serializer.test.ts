@@ -40,4 +40,10 @@ describe('redactString', () => {
     const input = '{"url":"https://example.com","message":"hello"}';
     expect(redactString(input)).toBe(input);
   });
+
+  it('redacts free-floating bearer tokens', () => {
+    const input = '{"value":"Bearer eyJhbGciOiJSUzI1NiJ9.payload.sig"}';
+    expect(redactString(input)).toContain('Bearer [redacted]');
+    expect(redactString(input)).not.toContain('eyJhbGciOiJSUzI1NiJ9');
+  });
 });
