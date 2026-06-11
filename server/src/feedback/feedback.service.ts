@@ -48,7 +48,7 @@ export class FeedbackService {
       project: dto.project,
       type: dto.type,
       message: dto.message,
-      id: result.rows[0].id,
+      id: result.rows[0]?.id ?? '',
     }).catch(() => {});
   }
 }
