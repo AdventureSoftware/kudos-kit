@@ -28,8 +28,7 @@ cd server
 npm run start:dev     # dev with watch
 npm run build         # compile to dist/
 npm run start:prod    # run compiled output
-npm run test          # unit tests (Jest, matches *.spec.ts)
-npm run test:e2e      # e2e tests (test/jest-e2e.json)
+npm run test          # unit tests (Vitest, matches src/**/*.spec.ts)
 npm run lint          # ESLint + Prettier fix
 ```
 
