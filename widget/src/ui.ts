@@ -1,5 +1,6 @@
 // widget/src/ui.ts
-import { FeedbackConfig } from './types';
+import { FeedbackConfig, FeedbackTheme } from './types';
+import { buildCss, mergeTheme, resolveMode } from './theme';
 
 export class FeedbackUI {
   private container: HTMLDivElement | null = null;
@@ -11,64 +12,20 @@ export class FeedbackUI {
   constructor(private config: FeedbackConfig) {}
 
   mount(): void {
-    // Sanitize theme values before CSS interpolation
-    const sanitizeCss = (v: string) => v.replace(/[{};'"\\<>]/g, '');
-    const accent = sanitizeCss(this.config.theme?.accent ?? '#111111');
-    const textOnAccent = sanitizeCss(this.config.theme?.text ?? '#ffffff');
-    const pos = this.config.position ?? 'bottom-right';
-    const offset = this.config.offset ?? {};
-
     this.styleEl = document.createElement('style');
-    this.styleEl.textContent = `
-      .kkw-btn {
-        position: fixed; z-index: 2147483000;
-        background: ${accent}; color: ${textOnAccent};
-        border: none; cursor: pointer;
-        font-family: system-ui, sans-serif; font-size: 13px; font-weight: 600;
-        padding: 9px 16px; border-radius: 6px;
-        ${pos.includes('bottom') ? `bottom: ${offset.bottom ?? 24}px;` : `top: ${offset.top ?? 24}px;`}
-        ${pos.includes('right') ? `right: ${offset.right ?? 24}px;` : `left: ${offset.left ?? 24}px;`}
-      }
-      .kkw-panel {
-        position: fixed; z-index: 2147483001;
-        background: #fff; border: 1px solid #e5e5e5; border-radius: 8px;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.12);
-        padding: 20px; width: 300px;
-        font-family: system-ui, sans-serif; font-size: 13px;
-        ${pos.includes('bottom') ? `bottom: ${(offset.bottom ?? 24) + 48}px;` : `top: ${(offset.top ?? 24) + 48}px;`}
-        ${pos.includes('right') ? `right: ${offset.right ?? 24}px;` : `left: ${offset.left ?? 24}px;`}
-      }
-      .kkw-chips { display: flex; gap: 6px; margin: 10px 0; }
-      .kkw-chip {
-        padding: 4px 10px; border: 1px solid #ccc; border-radius: 4px;
-        cursor: pointer; background: #fff; font-size: 12px; font-weight: 500;
-      }
-      .kkw-chip.active { background: ${accent}; color: ${textOnAccent}; border-color: ${accent}; }
-      .kkw-textarea, .kkw-input {
-        width: 100%; box-sizing: border-box; border: 1px solid #e5e5e5;
-        border-radius: 4px; padding: 8px; font-size: 13px; font-family: inherit;
-        resize: vertical; margin: 6px 0;
-      }
-      .kkw-textarea { min-height: 80px; }
-      .kkw-submit {
-        width: 100%; padding: 8px; background: ${accent}; color: ${textOnAccent};
-        border: none; border-radius: 4px; font-size: 13px; font-weight: 600;
-        cursor: pointer; margin-top: 8px;
-      }
-      .kkw-submit:disabled { opacity: 0.6; cursor: not-allowed; }
-      .kkw-label { font-size: 11px; color: #666; margin-bottom: 4px; display: block; }
-      .kkw-msg { font-size: 12px; margin-top: 8px; }
-      .kkw-privacy { font-size: 11px; color: #999; margin-top: 8px; }
-    `;
+    this.styleEl.textContent = buildCss(this.config);
     document.head.appendChild(this.styleEl);
 
     this.button = document.createElement('button');
+    this.button.type = 'button';
     this.button.className = 'kkw-btn';
     this.button.textContent = 'Feedback';
     this.button.onclick = () => this.togglePanel();
 
     this.panel = this.buildPanel();
     this.container = document.createElement('div');
+    this.container.className = 'kkw-root';
+    this.container.dataset.kkwMode = resolveMode(this.config.theme);
     this.container.appendChild(this.button);
     this.container.appendChild(this.panel);
     document.body.appendChild(this.container);
@@ -81,6 +38,7 @@ export class FeedbackUI {
     panel.className = 'kkw-panel';
 
     const title = document.createElement('strong');
+    title.className = 'kkw-title';
     title.textContent = 'Send feedback';
     panel.appendChild(title);
 
@@ -88,6 +46,7 @@ export class FeedbackUI {
     chips.className = 'kkw-chips';
     for (const [type, label] of [['bug', 'Bug'], ['idea', 'Idea'], ['other', 'Other']] as const) {
       const chip = document.createElement('button');
+      chip.type = 'button';
       chip.className = 'kkw-chip' + (type === 'bug' ? ' active' : '');
       chip.dataset.type = type;
       chip.textContent = label;
@@ -130,6 +89,7 @@ export class FeedbackUI {
     panel.appendChild(turnstile);
 
     const submitBtn = document.createElement('button');
+    submitBtn.type = 'button';
     submitBtn.className = 'kkw-submit';
     submitBtn.textContent = 'Submit';
     panel.appendChild(submitBtn);
@@ -140,14 +100,17 @@ export class FeedbackUI {
 
     const privacy = document.createElement('p');
     privacy.className = 'kkw-privacy';
-    privacy.textContent = 'Bug reports include technical diagnostics (console logs). ';
-    const privacyLink = document.createElement('a');
-    privacyLink.href = '/privacy';
-    privacyLink.target = '_blank';
-    privacyLink.rel = 'noopener noreferrer';
-    privacyLink.textContent = 'Privacy policy';
-    privacy.appendChild(privacyLink);
-    privacy.appendChild(document.createTextNode('.'));
+    privacy.textContent = 'Bug reports include technical diagnostics (console logs).';
+    if (this.config.privacyUrl) {
+      privacy.appendChild(document.createTextNode(' '));
+      const privacyLink = document.createElement('a');
+      privacyLink.href = this.config.privacyUrl;
+      privacyLink.target = '_blank';
+      privacyLink.rel = 'noopener noreferrer';
+      privacyLink.textContent = 'Privacy policy';
+      privacy.appendChild(privacyLink);
+      privacy.appendChild(document.createTextNode('.'));
+    }
     panel.appendChild(privacy);
 
     panel.querySelectorAll<HTMLElement>('.kkw-chip').forEach(chip => {
@@ -183,7 +146,10 @@ export class FeedbackUI {
 
   showMessage(text: string, isError = false): void {
     const msg = this.panel?.querySelector<HTMLElement>('.kkw-msg');
-    if (msg) { msg.textContent = text; msg.style.color = isError ? '#c00' : '#090'; }
+    if (!msg) return;
+    msg.textContent = text;
+    msg.classList.toggle('kkw-err', isError);
+    msg.classList.toggle('kkw-ok', !isError);
   }
 
   getTurnstileContainer(): HTMLElement | null {
@@ -203,6 +169,15 @@ export class FeedbackUI {
   hidePanel(): void {
     if (this.panel && this.visible) { this.panel.style.display = 'none'; this.visible = false; }
   }
+
+  /** Merge new theme values and re-apply styles without remounting. */
+  setTheme(theme: FeedbackTheme): void {
+    this.config = { ...this.config, theme: mergeTheme(this.config.theme, theme) };
+    if (this.styleEl) this.styleEl.textContent = buildCss(this.config);
+    if (this.container) this.container.dataset.kkwMode = resolveMode(this.config.theme);
+  }
+
+  getThemeMode(): string { return resolveMode(this.config.theme); }
 
   isVisible(): boolean { return this.visible; }
 
