@@ -1,33 +1,63 @@
 import Link from 'next/link';
+import { cn } from '@/lib/cn';
 import { buttonClass } from './Button';
 
 interface PaginationProps {
   page: number;
   totalPages: number;
   total: number;
-  /** Builds the href for a given page number, keeping current filters. */
+  pageSize: number;
   hrefFor: (page: number) => string;
 }
 
-export function Pagination({ page, totalPages, total, hrefFor }: PaginationProps) {
+/** Page numbers to show: first, last, and the current page with one neighbour each side. */
+function pageList(page: number, pages: number): Array<number | 'gap'> {
+  const wanted = new Set([1, pages, page - 1, page, page + 1].filter((p) => p >= 1 && p <= pages));
+  const sorted = [...wanted].sort((a, b) => a - b);
+  const out: Array<number | 'gap'> = [];
+  sorted.forEach((p, i) => {
+    if (i > 0 && p - sorted[i - 1] > 1) out.push('gap');
+    out.push(p);
+  });
+  return out;
+}
+
+export function Pagination({ page, totalPages, total, pageSize, hrefFor }: PaginationProps) {
   const pages = Math.max(totalPages, 1);
+  const from = total === 0 ? 0 : (page - 1) * pageSize + 1;
+  const to = Math.min(page * pageSize, total);
+  const disabled = 'pointer-events-none opacity-40';
+
   return (
-    <div className="flex items-center justify-between px-4 py-3 text-xs text-muted">
+    <nav aria-label="Pagination" className="flex flex-wrap items-center justify-between gap-3 px-4 py-3 text-xs text-muted">
       <span>
-        Page {page} of {pages} · {total} total
+        Showing <span className="font-medium text-text tabular-nums">{from}–{to}</span> of{' '}
+        <span className="font-medium text-text tabular-nums">{total}</span>
       </span>
-      <div className="flex gap-2">
-        {page > 1 ? (
-          <Link href={hrefFor(page - 1)} className={buttonClass('secondary', 'sm')}>← Prev</Link>
-        ) : (
-          <span className={buttonClass('secondary', 'sm', 'pointer-events-none opacity-40')}>← Prev</span>
-        )}
-        {page < pages ? (
-          <Link href={hrefFor(page + 1)} className={buttonClass('secondary', 'sm')}>Next →</Link>
-        ) : (
-          <span className={buttonClass('secondary', 'sm', 'pointer-events-none opacity-40')}>Next →</span>
-        )}
-      </div>
-    </div>
+
+      {pages > 1 && (
+        <div className="flex items-center gap-1">
+          <Link href={hrefFor(page - 1)} scroll={false} aria-label="Previous page"
+            className={buttonClass('secondary', 'sm', page <= 1 ? disabled : undefined)}>←</Link>
+          {pageList(page, pages).map((p, i) =>
+            p === 'gap' ? (
+              <span key={`gap-${i}`} className="px-1">…</span>
+            ) : (
+              <Link
+                key={p}
+                href={hrefFor(p)}
+                scroll={false}
+                aria-current={p === page ? 'page' : undefined}
+                className={cn(buttonClass(p === page ? 'primary' : 'ghost', 'sm'), 'min-w-7 tabular-nums')}
+              >
+                {p}
+              </Link>
+            ),
+          )}
+          <Link href={hrefFor(page + 1)} scroll={false} aria-label="Next page"
+            className={buttonClass('secondary', 'sm', page >= pages ? disabled : undefined)}>→</Link>
+        </div>
+      )}
+    </nav>
   );
 }

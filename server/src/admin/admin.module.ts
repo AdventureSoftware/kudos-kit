@@ -6,6 +6,7 @@ import { AuthController } from './auth.controller';
 import { JwtAuthGuard } from './jwt-auth.guard';
 import { AdminFeedbackService } from './admin-feedback.service';
 import { AdminFeedbackController } from './admin-feedback.controller';
+import { AdminStatsService } from './admin-stats.service';
 
 @Module({
   imports: [
@@ -20,6 +21,6 @@ import { AdminFeedbackController } from './admin-feedback.controller';
     }),
   ],
   controllers: [AuthController, AdminFeedbackController],
-  providers: [AuthService, AdminFeedbackService, JwtAuthGuard],
+  providers: [AuthService, AdminFeedbackService, AdminStatsService, JwtAuthGuard],
 })
 export class AdminModule {}

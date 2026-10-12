@@ -1,6 +1,6 @@
 import { cn } from '@/lib/cn';
 
-type Variant = 'primary' | 'secondary' | 'ghost' | 'danger';
+type Variant = 'primary' | 'secondary' | 'ghost' | 'danger' | 'dangerSolid';
 type Size = 'sm' | 'md';
 
 const base =
@@ -12,6 +12,7 @@ const variants: Record<Variant, string> = {
   secondary: 'bg-surface text-text border border-border hover:bg-surface-muted',
   ghost: 'text-muted hover:text-text hover:bg-surface-muted',
   danger: 'text-danger hover:bg-danger-soft',
+  dangerSolid: 'bg-danger text-danger-contrast hover:opacity-90',
 };
 
 const sizes: Record<Size, string> = {
@@ -23,7 +24,7 @@ export function buttonClass(variant: Variant = 'secondary', size: Size = 'md', e
   return cn(base, variants[variant], sizes[size], extra);
 }
 
-interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+interface ButtonProps extends React.ComponentProps<'button'> {
   variant?: Variant;
   size?: Size;
 }

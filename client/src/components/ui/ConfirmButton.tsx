@@ -1,22 +1,55 @@
 'use client';
 
+import { useRef, useState } from 'react';
+import { useFormStatus } from 'react-dom';
 import { Button } from './Button';
+import { ConfirmDialog } from './ConfirmDialog';
 
-/** A submit button that asks for confirmation before its form is submitted. */
+type ButtonProps = React.ComponentProps<typeof Button>;
+
+interface ConfirmButtonProps extends Omit<ButtonProps, 'onClick' | 'type'> {
+  title: string;
+  message?: React.ReactNode;
+  confirmLabel?: string;
+  pendingLabel?: string;
+  tone?: 'primary' | 'danger';
+}
+
+/**
+ * A button inside a <form> that asks for confirmation in a dialog,
+ * then submits that form. Works with server actions.
+ */
 export function ConfirmButton({
+  title,
   message,
+  confirmLabel,
+  pendingLabel,
+  tone = 'danger',
   children,
+  disabled,
   ...rest
-}: React.ComponentProps<typeof Button> & { message: string }) {
+}: ConfirmButtonProps) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLButtonElement>(null);
+  const { pending } = useFormStatus();
+
   return (
-    <Button
-      type="submit"
-      {...rest}
-      onClick={(e) => {
-        if (!window.confirm(message)) e.preventDefault();
-      }}
-    >
-      {children}
-    </Button>
+    <>
+      <Button ref={ref} type="button" disabled={disabled || pending} onClick={() => setOpen(true)} {...rest}>
+        {pending && pendingLabel ? pendingLabel : children}
+      </Button>
+      <ConfirmDialog
+        open={open}
+        title={title}
+        message={message}
+        confirmLabel={confirmLabel}
+        tone={tone}
+        onCancel={() => setOpen(false)}
+        onConfirm={() => {
+          setOpen(false);
+          ref.current?.form?.requestSubmit();
+        }}
+      />
+    </>
   );
 }

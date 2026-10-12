@@ -1,3 +1,4 @@
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import { AdminFeedbackService } from './admin-feedback.service';
 import { PrismaAdminService } from '../prisma/prisma-admin.service';
@@ -6,6 +7,7 @@ const mockPrisma = () => ({
   feedback: {
     findMany: jest.fn(),
     count: jest.fn(),
+    groupBy: jest.fn().mockResolvedValue([]),
     findUnique: jest.fn(),
     update: jest.fn(),
     delete: jest.fn(),
@@ -32,14 +34,124 @@ describe('AdminFeedbackService', () => {
 
   it('returns paginated feedback with serialized BigInt ids', async () => {
     (prisma.feedback.findMany as jest.Mock).mockResolvedValue([
-      { id: BigInt(1), project: 'colorpage', type: 'bug', message: 'test',
-        email: null, user_ctx: null, context: null, status: 'new', created_at: new Date() },
+      { id: BigInt(1), project: 'colorpage', number: 12, type: 'bug', message: 'test',
+        email: null, user_ctx: null, context: null, status: 'new', created_at: new Date(),
+        projectRef: { prefix: 'CP' } },
     ]);
     (prisma.feedback.count as jest.Mock).mockResolvedValue(1);
     const result = await service.list({});
     expect(result.rows[0].id).toBe('1');
+    expect(result.rows[0].ref).toBe('CP-12');
+    expect(result.rows[0]).not.toHaveProperty('projectRef');
     expect(result.total).toBe(1);
     expect(result.totalPages).toBe(1);
+  });
+
+  it('sorts by created_at desc by default, with id as tiebreaker', async () => {
+    (prisma.feedback.findMany as jest.Mock).mockResolvedValue([]);
+    (prisma.feedback.count as jest.Mock).mockResolvedValue(0);
+    const result = await service.list({});
+    expect(prisma.feedback.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({ orderBy: [{ created_at: 'desc' }, { id: 'desc' }] }),
+    );
+    expect(result).toMatchObject({ sort: 'created_at', dir: 'desc', pageSize: 20 });
+  });
+
+  it('sorts by an allowed column and direction', async () => {
+    (prisma.feedback.findMany as jest.Mock).mockResolvedValue([]);
+    (prisma.feedback.count as jest.Mock).mockResolvedValue(0);
+    await service.list({ sort: 'status', dir: 'asc' });
+    expect(prisma.feedback.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({ orderBy: [{ status: 'asc' }, { id: 'desc' }] }),
+    );
+  });
+
+  it('ignores unknown sort columns', async () => {
+    (prisma.feedback.findMany as jest.Mock).mockResolvedValue([]);
+    (prisma.feedback.count as jest.Mock).mockResolvedValue(0);
+    await service.list({ sort: 'email; drop table', dir: 'sideways' });
+    expect(prisma.feedback.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({ orderBy: [{ created_at: 'desc' }, { id: 'desc' }] }),
+    );
+  });
+
+  it('filters by type and status, ignoring unknown values', async () => {
+    (prisma.feedback.findMany as jest.Mock).mockResolvedValue([]);
+    (prisma.feedback.count as jest.Mock).mockResolvedValue(0);
+    await service.list({ type: 'bug', status: 'new' });
+    expect(prisma.feedback.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({ where: { type: 'bug', status: 'new' } }),
+    );
+    await service.list({ type: 'evil', status: 'whatever' });
+    expect(prisma.feedback.findMany).toHaveBeenLastCalledWith(expect.objectContaining({ where: {} }));
+  });
+
+  it('searches message and email case-insensitively', async () => {
+    (prisma.feedback.findMany as jest.Mock).mockResolvedValue([]);
+    (prisma.feedback.count as jest.Mock).mockResolvedValue(0);
+    await service.list({ q: '  export button ' });
+    expect(prisma.feedback.findMany).toHaveBeenCalledWith(expect.objectContaining({
+      where: { OR: [
+        { message: { contains: 'export button', mode: 'insensitive' } },
+        { email: { contains: 'export button', mode: 'insensitive' } },
+      ] },
+    }));
+  });
+
+  it('treats a reference like cp-12 as an exact lookup', async () => {
+    (prisma.feedback.findMany as jest.Mock).mockResolvedValue([]);
+    (prisma.feedback.count as jest.Mock).mockResolvedValue(0);
+    await service.list({ q: 'cp-12' });
+    expect(prisma.feedback.findMany).toHaveBeenCalledWith(expect.objectContaining({
+      where: { projectRef: { prefix: 'CP' }, number: 12 },
+    }));
+  });
+
+  it('returns status counts for the current filters, ignoring the status filter itself', async () => {
+    (prisma.feedback.findMany as jest.Mock).mockResolvedValue([]);
+    (prisma.feedback.count as jest.Mock).mockResolvedValue(3);
+    (prisma.feedback.groupBy as jest.Mock).mockResolvedValue([
+      { status: 'new', _count: { _all: 3 } },
+      { status: 'done', _count: { _all: 5 } },
+    ]);
+    const result = await service.list({ type: 'bug', status: 'new' });
+    expect(prisma.feedback.groupBy).toHaveBeenCalledWith(expect.objectContaining({ where: { type: 'bug' } }));
+    expect(result.statusCounts).toEqual({ all: 8, new: 3, triaged: 0, done: 5 });
+  });
+
+  it('skips to the requested page', async () => {
+    (prisma.feedback.findMany as jest.Mock).mockResolvedValue([]);
+    (prisma.feedback.count as jest.Mock).mockResolvedValue(60);
+    const result = await service.list({ page: '3' });
+    expect(prisma.feedback.findMany).toHaveBeenCalledWith(expect.objectContaining({ take: 20, skip: 40 }));
+    expect(result.totalPages).toBe(3);
+  });
+
+  it('returns one item with console logs and errors', async () => {
+    (prisma.feedback.findUnique as jest.Mock).mockResolvedValue({
+      id: BigInt(7), project: 'colorpage', number: 3, type: 'bug', message: 'broke',
+      email: null, user_ctx: null, context: { url: 'https://x' },
+      console_logs: [{ t: 1, level: 'error', msg: 'boom' }], errors: [], status: 'new', created_at: new Date(),
+      projectRef: { prefix: 'CP' },
+    });
+    const item = await service.get('7');
+    expect(item.id).toBe('7');
+    expect(item.ref).toBe('CP-3');
+    expect(item.console_logs).toEqual([{ t: 1, level: 'error', msg: 'boom' }]);
+    expect(prisma.feedback.findUnique).toHaveBeenCalledWith(
+      expect.objectContaining({ where: { id: BigInt(7) } }),
+    );
+  });
+
+  it('throws NotFound for a missing item', async () => {
+    (prisma.feedback.findUnique as jest.Mock).mockResolvedValue(null);
+    await expect(service.get('99')).rejects.toBeInstanceOf(NotFoundException);
+  });
+
+  it('rejects ids that are not positive integers', async () => {
+    await expect(service.get('abc')).rejects.toBeInstanceOf(BadRequestException);
+    await expect(service.get('1; drop')).rejects.toBeInstanceOf(BadRequestException);
+    expect(prisma.feedback.findUnique).not.toHaveBeenCalled();
   });
 
   it('cycles status new → triaged', async () => {
@@ -75,11 +187,14 @@ describe('AdminFeedbackService', () => {
     expect(prisma.feedback.delete).toHaveBeenCalledWith({ where: { id: BigInt(5) } });
   });
 
-  it('returns project keys ordered alphabetically', async () => {
+  it('returns only projects that have feedback, ordered alphabetically', async () => {
     (prisma.project.findMany as jest.Mock).mockResolvedValue([
       { key: 'bizpage' }, { key: 'colorpage' },
     ]);
     const result = await service.listProjects();
     expect(result).toEqual(['bizpage', 'colorpage']);
+    expect(prisma.project.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({ where: { feedback: { some: {} } } }),
+    );
   });
 });

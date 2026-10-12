@@ -1,5 +1,8 @@
 import { loginAction } from './actions';
 import { Button, Card, Input, Label } from '@/components/ui';
+import { Logo } from '@/components/Logo';
+
+export const metadata = { title: 'Sign in' };
 
 const errors: Record<string, string> = {
   invalid: 'Invalid password.',
@@ -17,9 +20,9 @@ export default async function LoginPage({
   return (
     <div className="flex flex-1 items-center justify-center px-4 py-16">
       <Card className="w-full max-w-sm p-8">
-        <div className="mb-6 flex items-center gap-2">
-          <span className="inline-block h-2.5 w-2.5 rounded-full bg-accent" aria-hidden />
-          <h1 className="text-base font-semibold">kudos-kit</h1>
+        <div className="mb-6 flex flex-col items-center gap-2 text-center">
+          <h1 className="m-0"><Logo size={36} /></h1>
+          <p className="text-muted">Sign in to your feedback inbox</p>
         </div>
 
         <form action={loginAction} className="space-y-4">
