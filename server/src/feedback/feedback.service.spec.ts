@@ -64,10 +64,10 @@ describe('FeedbackService', () => {
     const [, ...args] = (prisma.$queryRaw as jest.Mock).mock.calls[0];
     expect(args).toEqual([
       'colorpage', 'bug', 'Something broke', null,
-      expect.anything(), // Prisma.DbNull for user_ctx
-      expect.anything(), // Prisma.DbNull for context
-      expect.anything(), // Prisma.DbNull for console_logs
-      expect.anything(), // Prisma.DbNull for errors
+      null, // user_ctx
+      null, // context
+      null, // console_logs
+      null, // errors
       '1.2.3.4',
     ]);
     await new Promise(r => setTimeout(r, 0));

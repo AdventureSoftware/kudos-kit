@@ -1,40 +1,40 @@
 import { loginAction } from './actions';
+import { Button, Card, Input, Label } from '@/components/ui';
+
+const errors: Record<string, string> = {
+  invalid: 'Invalid password.',
+  throttled: 'Too many attempts. Wait a minute and try again.',
+};
 
 export default async function LoginPage({
   searchParams,
 }: {
   searchParams: Promise<{ error?: string }>;
 }) {
-  const params = await searchParams;
-  const hasError = Boolean(params.error);
+  const { error } = await searchParams;
+  const message = error ? (errors[error] ?? errors.invalid) : null;
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', alignItems: 'center', justifyContent: 'center', background: '#fafaf9' }}>
-      <form
-        action={loginAction}
-        style={{ background: '#fff', border: '1px solid #e5e5e5', borderRadius: 8, padding: 32, width: 320 }}
-      >
-        <h1 style={{ margin: '0 0 24px', fontSize: 18, fontWeight: 600 }}>Admin</h1>
-        {hasError && (
-          <p style={{ margin: '0 0 16px', fontSize: 13, color: '#c00', background: '#fee2e2', borderRadius: 4, padding: '8px 10px' }}>
-            Invalid password
-          </p>
-        )}
-        <label style={{ display: 'block', fontSize: 13, marginBottom: 6 }}>Password</label>
-        <input
-          type="password"
-          name="password"
-          required
-          autoFocus
-          style={{ width: '100%', boxSizing: 'border-box', border: '1px solid #e5e5e5', borderRadius: 4, padding: '8px 10px', fontSize: 13, marginBottom: 16 }}
-        />
-        <button
-          type="submit"
-          style={{ width: '100%', padding: '9px 0', background: '#111', color: '#fff', border: 'none', borderRadius: 4, fontSize: 13, fontWeight: 600, cursor: 'pointer' }}
-        >
-          Sign in
-        </button>
-      </form>
+    <div className="flex flex-1 items-center justify-center px-4 py-16">
+      <Card className="w-full max-w-sm p-8">
+        <div className="mb-6 flex items-center gap-2">
+          <span className="inline-block h-2.5 w-2.5 rounded-full bg-accent" aria-hidden />
+          <h1 className="text-base font-semibold">kudos-kit</h1>
+        </div>
+
+        <form action={loginAction} className="space-y-4">
+          {message && (
+            <p role="alert" className="rounded-ui bg-danger-soft px-3 py-2 text-danger">
+              {message}
+            </p>
+          )}
+          <div>
+            <Label htmlFor="password">Admin password</Label>
+            <Input id="password" type="password" name="password" required autoFocus autoComplete="current-password" />
+          </div>
+          <Button type="submit" variant="primary" className="w-full">Sign in</Button>
+        </form>
+      </Card>
     </div>
   );
 }

@@ -1,9 +1,22 @@
 // widget/src/index.ts
-import { FeedbackConfig, FeedbackPayload } from './types';
+import { FeedbackConfig, FeedbackPayload, FeedbackTheme } from './types';
 import { ConsoleCapture } from './console-capture';
+import { mergeTheme } from './theme';
 import { FeedbackUI } from './ui';
 
-const INGEST_URL = 'https://feedback.agileturtles.com/v1/feedback';
+// Captured at load time — document.currentScript is only set while this file is executing.
+const SCRIPT_ORIGIN: string | null = (() => {
+  const src = (document.currentScript as HTMLScriptElement | null)?.src;
+  try { return src ? new URL(src).origin : null; } catch { return null; }
+})();
+
+function resolveIngestUrl(cfg: FeedbackConfig): string | null {
+  const base = cfg.apiUrl ?? SCRIPT_ORIGIN;
+  if (!base) return null;
+  return base.replace(/\/+$/, '') + '/v1/feedback';
+}
+
+let ingestUrl: string | null = null;
 
 let ui: FeedbackUI | null = null;
 let capture: ConsoleCapture | null = null;
@@ -40,11 +53,18 @@ function toggle(): void { isVisible() ? hide() : show(); }
 function destroy(): void {
   ui?.destroy(); ui = null;
   capture?.restore(); capture = null;
-  config = null; listeners = {};
+  config = null; listeners = {}; ingestUrl = null;
+}
+
+/** Change theme at runtime, e.g. when the host app toggles dark mode. */
+function setTheme(theme: FeedbackTheme): void {
+  if (!ui || !config) return;
+  config = { ...config, theme: mergeTheme(config.theme, theme) };
+  ui.setTheme(theme);
 }
 
 async function submitFeedback(): Promise<void> {
-  if (!ui || !config) return;
+  if (!ui || !config || !ingestUrl) return;
   const message = ui.getMessage();
   if (!message) { ui.showMessage('Please enter a message.', true); return; }
 
@@ -63,6 +83,7 @@ async function submitFeedback(): Promise<void> {
       }
       turnstileWidgetId = (window as any).turnstile.render(container, {
         sitekey: config!.turnstileSiteKey,
+        theme: ui!.getThemeMode(),
         callback: resolve,
         'error-callback': reject,
       });
@@ -97,13 +118,13 @@ async function submitFeedback(): Promise<void> {
   };
 
   const consoleCfg = config.console;
-  if (capture && consoleCfg?.sendOn.includes(type)) {
+  if (capture && consoleCfg?.sendOn.includes(type as 'bug' | 'idea' | 'other')) {
     payload.console = capture.getLogs();
     payload.errors = capture.getErrors();
   }
 
   try {
-    const res = await fetch(INGEST_URL, {
+    const res = await fetch(ingestUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
@@ -120,6 +141,11 @@ async function submitFeedback(): Promise<void> {
 
 export function init(cfg: FeedbackConfig): void {
   if (ui) return;
+  ingestUrl = resolveIngestUrl(cfg);
+  if (!ingestUrl) {
+    console.warn('[kkw] Could not determine the API URL. Pass apiUrl to Feedback.init().');
+    return;
+  }
   config = cfg;
 
   if (cfg.console?.enabled) {
@@ -147,4 +173,4 @@ export function init(cfg: FeedbackConfig): void {
   }
 }
 
-export { show, hide, toggle, isVisible, on, destroy };
+export { show, hide, toggle, isVisible, on, destroy, setTheme };

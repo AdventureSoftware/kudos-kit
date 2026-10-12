@@ -2,10 +2,9 @@
 
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
+import { API_URL, TOKEN_COOKIE } from '@/lib/auth';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3000';
-
-export async function loginAction(formData: FormData): Promise<{ error?: string }> {
+export async function loginAction(formData: FormData): Promise<void> {
   const password = formData.get('password')?.toString() ?? '';
 
   const res = await fetch(`${API_URL}/v1/admin/login`, {
@@ -14,13 +13,13 @@ export async function loginAction(formData: FormData): Promise<{ error?: string 
     body: JSON.stringify({ password }),
   });
 
-  if (!res.ok) {
-    return { error: 'Invalid password' };
-  }
+  // 429 = too many attempts (login is throttled on the server)
+  if (res.status === 429) redirect('/login?error=throttled');
+  if (!res.ok) redirect('/login?error=invalid');
 
   const { token } = (await res.json()) as { token: string };
   const jar = await cookies();
-  jar.set('admin_token', token, {
+  jar.set(TOKEN_COOKIE, token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'strict',
