@@ -1,5 +1,5 @@
 import { redirect } from 'next/navigation';
-import { apiFetch } from '@/lib/auth';
+import { apiFetch, getMemberRole } from '@/lib/auth';
 import { feedbackHref, isFiltered, parseFeedbackQuery, toApiParams } from '@/lib/feedback-query';
 import { FeedbackToolbar } from '@/components/feedback/FeedbackToolbar';
 import { FeedbackTable } from '@/components/feedback/FeedbackTable';
@@ -15,11 +15,14 @@ export default async function FeedbackPage({
 }) {
   const query = parseFeedbackQuery(await searchParams);
 
-  const [listRes, projectsRes, itemRes] = await Promise.all([
+  const [listRes, projectsRes, itemRes, role] = await Promise.all([
     apiFetch(`/v1/admin/feedback?${toApiParams(query)}`),
     apiFetch('/v1/admin/projects'),
     query.item ? apiFetch(`/v1/admin/feedback/${query.item}`) : Promise.resolve(null),
+    getMemberRole(),
   ]);
+  // Deleting is permanent (GDPR erasure), so only owners and admins see the button.
+  const canDelete = role === 'owner' || role === 'admin';
   if ([listRes, projectsRes, itemRes].some((r) => r?.status === 401)) redirect('/login');
   if (!listRes.ok || !projectsRes.ok) {
     throw new Error(`API error: feedback ${listRes.status}, projects ${projectsRes.status}`);
@@ -40,9 +43,9 @@ export default async function FeedbackPage({
 
       <FeedbackToolbar query={query} projects={projects} counts={data.statusCounts} />
 
-      <FeedbackTable data={data} query={query} />
+      <FeedbackTable data={data} query={query} canDelete={canDelete} />
 
-      {query.item && <FeedbackDrawer item={item} closeHref={feedbackHref(query, { item: undefined })} />}
+      {query.item && <FeedbackDrawer item={item} closeHref={feedbackHref(query, { item: undefined })} canDelete={canDelete} />}
     </div>
   );
 }

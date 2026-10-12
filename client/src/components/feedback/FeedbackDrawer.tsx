@@ -36,6 +36,7 @@ const clock = new Intl.DateTimeFormat('en-GB', { hour: '2-digit', minute: '2-dig
 
 const levelTone: Record<string, Tone> = { error: 'danger', warn: 'warning', info: 'accent' };
 
+/** Only http(s) links are clickable; anything else is shown as plain text. */
 function safeUrl(url?: string): string | null {
   if (!url) return null;
   try {
@@ -46,7 +47,7 @@ function safeUrl(url?: string): string | null {
   }
 }
 
-export function FeedbackDrawer({ item, closeHref }: { item: FeedbackDetail | null; closeHref: string }) {
+export function FeedbackDrawer({ item, closeHref, canDelete }: { item: FeedbackDetail | null; closeHref: string; canDelete: boolean }) {
   return (
     <div className="fixed inset-0 z-40">
       <CloseOnEscape href={closeHref} />
@@ -57,7 +58,7 @@ export function FeedbackDrawer({ item, closeHref }: { item: FeedbackDetail | nul
         aria-labelledby="feedback-detail-title"
         className="kk-drawer-in absolute inset-y-0 right-0 flex w-full max-w-2xl flex-col border-l border-border bg-surface shadow-xl"
       >
-        {item ? <Detail item={item} closeHref={closeHref} /> : <Missing closeHref={closeHref} />}
+        {item ? <Detail item={item} closeHref={closeHref} canDelete={canDelete} /> : <Missing closeHref={closeHref} />}
       </aside>
     </div>
   );
@@ -73,7 +74,7 @@ function Missing({ closeHref }: { closeHref: string }) {
   );
 }
 
-function Detail({ item, closeHref }: { item: FeedbackDetail; closeHref: string }) {
+function Detail({ item, closeHref, canDelete }: { item: FeedbackDetail; closeHref: string; canDelete: boolean }) {
   const ctx = item.context ?? {};
   const logs = item.console_logs ?? [];
   const errors = item.errors ?? [];
@@ -94,7 +95,7 @@ function Detail({ item, closeHref }: { item: FeedbackDetail; closeHref: string }
           </h2>
         </div>
         <div className="flex shrink-0 items-center gap-1">
-          <DeleteButton id={item.id} label={item.ref} closeHref={closeHref} />
+          {canDelete && <DeleteButton id={item.id} label={item.ref} closeHref={closeHref} />}
           <Link href={closeHref} scroll={false} className={buttonClass('ghost', 'sm')} aria-label="Close">✕</Link>
         </div>
       </header>

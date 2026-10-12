@@ -1,10 +1,10 @@
-import { Controller, Delete, Get, HttpCode, Param, Patch, Query, UseGuards } from '@nestjs/common';
-import { JwtAuthGuard } from './jwt-auth.guard';
+import { Controller, Delete, Get, HttpCode, Param, Patch, Query } from '@nestjs/common';
+import { OrgRoles } from '@thallesp/nestjs-better-auth';
 import { AdminFeedbackService } from './admin-feedback.service';
 import { AdminStatsService, StatsResponse } from './admin-stats.service';
 
+/** Every route needs a signed-in team member (global guard). Deleting needs owner or admin. */
 @Controller('v1/admin')
-@UseGuards(JwtAuthGuard)
 export class AdminFeedbackController {
   constructor(
     private adminFeedback: AdminFeedbackService,
@@ -36,7 +36,9 @@ export class AdminFeedbackController {
     return this.adminFeedback.cycleStatus(id);
   }
 
+  /** Permanent (GDPR erasure), so limited to owners and admins. */
   @Delete('feedback/:id')
+  @OrgRoles(['owner', 'admin'])
   @HttpCode(204)
   async delete(@Param('id') id: string): Promise<void> {
     return this.adminFeedback.delete(id);
