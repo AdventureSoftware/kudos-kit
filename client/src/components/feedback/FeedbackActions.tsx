@@ -1,7 +1,8 @@
-import { cycleStatus, deleteFeedback, deleteFeedbackAndClose } from '@/app/admin/actions';
+import { cycleStatus, deleteFeedback, deleteFeedbackAndClose } from '@/app/(dashboard)/actions';
 import { Badge, ConfirmButton, statusTone } from '@/components/ui';
 
 const NEXT_STATUS: Record<string, string> = { new: 'triaged', triaged: 'done', done: 'new' };
+
 
 export function StatusButton({ id, status }: { id: string; status: string }) {
   return (

@@ -3,10 +3,10 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button, Input, Label } from '@/components/ui';
+import { newPasswordError } from '@/lib/password';
 import { authClient, authErrorMessage } from '@/lib/auth-client';
 import { FormError } from './AuthCard';
-
-const MIN_PASSWORD = 10;
+import { NewPasswordFields } from './NewPasswordFields';
 
 /** Creates the very first account, which becomes the team's owner. */
 export function SetupForm() {
@@ -17,9 +17,9 @@ export function SetupForm() {
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const form = new FormData(e.currentTarget);
-    const password = String(form.get('password') ?? '');
-    if (password.length < MIN_PASSWORD) return setError(`The password needs at least ${MIN_PASSWORD} characters.`);
-    if (password !== form.get('confirm')) return setError('The two passwords do not match.');
+    const invalid = newPasswordError(form);
+    if (invalid) return setError(invalid);
+    const password = String(form.get('password'));
 
     setPending(true);
     setError(null);
@@ -33,7 +33,7 @@ export function SetupForm() {
       setPending(false);
       return;
     }
-    router.replace('/admin');
+    router.replace('/');
     router.refresh();
   }
 
@@ -48,15 +48,7 @@ export function SetupForm() {
         <Label htmlFor="email">Email</Label>
         <Input id="email" name="email" type="email" required autoComplete="email" />
       </div>
-      <div>
-        <Label htmlFor="password">Password</Label>
-        <Input id="password" name="password" type="password" required minLength={MIN_PASSWORD} autoComplete="new-password" />
-        <p className="mt-1 text-xs text-muted">At least {MIN_PASSWORD} characters.</p>
-      </div>
-      <div>
-        <Label htmlFor="confirm">Repeat password</Label>
-        <Input id="confirm" name="confirm" type="password" required autoComplete="new-password" />
-      </div>
+      <NewPasswordFields />
       <Button type="submit" variant="primary" className="w-full" disabled={pending}>
         {pending ? 'Creating account…' : 'Create owner account'}
       </Button>

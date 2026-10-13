@@ -8,3 +8,4 @@ export { EmptyState } from './EmptyState';
 export { ConfirmButton } from './ConfirmButton';
 export { ConfirmDialog, type ConfirmDialogProps } from './ConfirmDialog';
 export { MenuSelect, type MenuOption } from './MenuSelect';
+export { FormError } from './FormError';

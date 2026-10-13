@@ -1,7 +1,8 @@
+import Link from 'next/link';
 import { Card } from '@/components/ui';
 import { Logo } from '@/components/Logo';
 
-
+/** Centered card with the logo, used by the sign-in and setup pages. */
 export function AuthCard({ subtitle, children }: { subtitle: string; children: React.ReactNode }) {
   return (
     <div className="flex flex-1 items-center justify-center px-4 py-16">
@@ -11,12 +12,13 @@ export function AuthCard({ subtitle, children }: { subtitle: string; children: R
           <p className="text-muted">{subtitle}</p>
         </div>
         {children}
+        <p className="mt-8 text-center text-xs">
+          <Link href="/privacy" className="text-muted hover:text-text">Privacy</Link>
+        </p>
       </Card>
     </div>
   );
 }
 
-export function FormError({ message }: { message: string | null }) {
-  if (!message) return null;
-  return <p role="alert" className="rounded-ui bg-danger-soft px-3 py-2 text-danger">{message}</p>;
-}
+// Kept here too so existing imports from './AuthCard' keep working.
+export { FormError } from '@/components/ui/FormError';

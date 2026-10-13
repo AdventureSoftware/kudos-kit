@@ -3,8 +3,9 @@ import { OrgRoles } from '@thallesp/nestjs-better-auth';
 import { AdminFeedbackService } from './admin-feedback.service';
 import { AdminStatsService, StatsResponse } from './admin-stats.service';
 
-/** Every route needs a signed-in team member (global guard). Deleting needs owner or admin. */
+/** Every route needs a signed-in team member. Deleting needs owner or admin. */
 @Controller('v1/admin')
+@OrgRoles(['owner', 'admin', 'member'])
 export class AdminFeedbackController {
   constructor(
     private adminFeedback: AdminFeedbackService,

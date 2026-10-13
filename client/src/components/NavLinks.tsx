@@ -5,8 +5,10 @@ import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/cn';
 
 const links = [
-  { href: '/admin', label: 'Overview', exact: true },
-  { href: '/admin/feedback', label: 'Feedback', exact: false },
+  { href: '/', label: 'Overview', exact: true },
+  { href: '/feedback', label: 'Feedback', exact: false },
+  { href: '/team', label: 'Team', exact: false },
+  { href: '/widget', label: 'Widget', exact: false },
 ];
 
 export function NavLinks() {

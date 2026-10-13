@@ -6,6 +6,12 @@ const store = (over: Partial<AuthStore> = {}): AuthStore => ({
   hasPendingInvitation: jest.fn().mockResolvedValue(false),
   createTeamWithOwner: jest.fn(),
   findOrganizationId: jest.fn().mockResolvedValue(null),
+  findInvitation: jest.fn().mockResolvedValue(null),
+  findMember: jest.fn().mockResolvedValue(null),
+  findMemberByUserId: jest.fn().mockResolvedValue(null),
+  setMemberRole: jest.fn(),
+  deleteUser: jest.fn(),
+  markEmailVerified: jest.fn(),
   ...over,
 });
 

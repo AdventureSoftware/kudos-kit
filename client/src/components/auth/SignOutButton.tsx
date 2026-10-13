@@ -5,7 +5,8 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui';
 import { authClient } from '@/lib/auth-client';
 
-export function SignOutButton() {
+
+export function SignOutButton({ redirectTo = '/login', label = 'Sign out' }: { redirectTo?: string; label?: string }) {
   const router = useRouter();
   const [pending, setPending] = useState(false);
   return (
@@ -17,11 +18,11 @@ export function SignOutButton() {
       onClick={async () => {
         setPending(true);
         await authClient.signOut();
-        router.replace('/login');
+        router.replace(redirectTo);
         router.refresh();
       }}
     >
-      {pending ? 'Signing out…' : 'Sign out'}
+      {pending ? 'Signing out…' : label}
     </Button>
   );
 }

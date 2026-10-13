@@ -1,14 +1,15 @@
 'use client';
 
+import Link from 'next/link';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button, Input, Label } from '@/components/ui';
 import { authClient, authErrorMessage } from '@/lib/auth-client';
 import { FormError } from './AuthCard';
 
-export function LoginForm() {
+export function LoginForm({ initialError = null }: { initialError?: string | null }) {
   const router = useRouter();
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(initialError);
   const [pending, setPending] = useState(false);
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -25,7 +26,7 @@ export function LoginForm() {
       setPending(false);
       return;
     }
-    router.replace('/admin');
+    router.replace('/');
     router.refresh();
   }
 
@@ -37,7 +38,12 @@ export function LoginForm() {
         <Input id="email" name="email" type="email" required autoFocus autoComplete="email" />
       </div>
       <div>
-        <Label htmlFor="password">Password</Label>
+        <div className="flex items-baseline justify-between">
+          <Label htmlFor="password">Password</Label>
+          <Link href="/forgot-password" className="text-xs font-medium text-accent hover:underline">
+            Forgot password?
+          </Link>
+        </div>
         <Input id="password" name="password" type="password" required autoComplete="current-password" />
       </div>
       <Button type="submit" variant="primary" className="w-full" disabled={pending}>

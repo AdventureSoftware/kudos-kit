@@ -11,6 +11,9 @@ import { PrismaAdminService } from './prisma/prisma-admin.service';
 import { AdminModule } from './admin/admin.module';
 import { AccountModule } from './auth/account.module';
 import { AUTH_STORE } from './auth/tokens';
+import { MailModule } from './mail/mail.module';
+import { MailService } from './mail/mail.service';
+import { TeamModule } from './team/team.module';
 import type { AuthStore } from './auth/auth-store';
 import { createAuth, type AuthSettings } from './auth/auth.config';
 import configuration from './config/configuration';
@@ -28,12 +31,13 @@ import configuration from './config/configuration';
     // Better Auth on /api/auth, using the admin database role (the only role allowed to touch auth tables).
     // Its global guard protects every route; public ones say @AllowAnonymous().
     AuthModule.forRootAsync({
-      imports: [AccountModule],
-      inject: [ConfigService, PrismaAdminService, AUTH_STORE],
-      useFactory: (config: ConfigService, prisma: PrismaAdminService, store: AuthStore) => ({
+      imports: [AccountModule, MailModule],
+      inject: [ConfigService, PrismaAdminService, AUTH_STORE, MailService],
+      useFactory: (config: ConfigService, prisma: PrismaAdminService, store: AuthStore, mailer: MailService) => ({
         auth: createAuth({
           database: prismaAdapter(prisma, { provider: 'postgresql' }),
           store,
+          mailer,
           settings: config.getOrThrow<AuthSettings>('auth'),
         }),
         disableBodyParser: true,          // main.ts adds parsers with a size limit
@@ -42,6 +46,7 @@ import configuration from './config/configuration';
     }),
     FeedbackModule,
     AdminModule,
+    TeamModule,
   ],
 })
 export class AppModule {}

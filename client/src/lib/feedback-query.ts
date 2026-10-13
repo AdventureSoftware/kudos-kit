@@ -1,4 +1,5 @@
 
+
 export const SORT_FIELDS = ['created_at', 'project', 'type', 'status'] as const;
 export type SortField = (typeof SORT_FIELDS)[number];
 export type SortDir = 'asc' | 'desc';
@@ -42,7 +43,6 @@ export function parseFeedbackQuery(raw: RawParams): FeedbackQuery {
   };
 }
 
-
 export function toApiParams(q: FeedbackQuery): URLSearchParams {
   const p = new URLSearchParams();
   if (q.project) p.set('project', q.project);
@@ -71,5 +71,5 @@ export function feedbackHref(q: FeedbackQuery, change: Partial<FeedbackQuery> = 
   if (next.page > 1) p.set('page', String(next.page));
   if (next.item) p.set('item', next.item);
   const s = p.toString();
-  return `/admin/feedback${s ? `?${s}` : ''}`;
+  return `/feedback${s ? `?${s}` : ''}`;
 }

@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useId, useRef, useState } from 'react';
+import { useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { cn } from '@/lib/cn';
 
 export interface MenuOption<T extends string> {
@@ -17,11 +18,12 @@ interface MenuSelectProps<T extends string> {
   align?: 'left' | 'right';
 }
 
-/**
- * A select-like dropdown whose menu always opens below the button and follows the
- * dashboard theme (the native macOS menu covers the field and cannot be styled).
- * Keyboard: ↑ ↓ Home End to move, Enter or Space to pick, Escape to close.
- */
+
+type MenuPosition = { top: number; left?: number; right?: number; minWidth: number };
+
+const GAP = 4;
+
+
 export function MenuSelect<T extends string>({ value, options, onChange, label, className, align = 'left' }: MenuSelectProps<T>) {
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState(0);
@@ -29,6 +31,7 @@ export function MenuSelect<T extends string>({ value, options, onChange, label, 
   const buttonRef = useRef<HTMLButtonElement>(null);
   const listRef = useRef<HTMLUListElement>(null);
   const listId = useId();
+  const [pos, setPos] = useState<MenuPosition | null>(null);
 
   const selectedIndex = Math.max(0, options.findIndex((o) => o.value === value));
   const current = options[selectedIndex];
@@ -48,11 +51,36 @@ export function MenuSelect<T extends string>({ value, options, onChange, label, 
   };
 
 
+  useLayoutEffect(() => {
+    if (!open) return setPos(null);
+    const place = () => {
+      const button = buttonRef.current?.getBoundingClientRect();
+      if (!button) return;
+      const height = listRef.current?.offsetHeight ?? 0;
+      const roomBelow = window.innerHeight - button.bottom;
+      const up = roomBelow < height + GAP * 2 && button.top > roomBelow;
+      setPos({
+        top: up ? button.top - height - GAP : button.bottom + GAP,
+        ...(align === 'right' ? { right: window.innerWidth - button.right } : { left: button.left }),
+        minWidth: button.width,
+      });
+    };
+    place();
+    window.addEventListener('resize', place);
+    window.addEventListener('scroll', place, true); // true: also when a table or panel scrolls
+    return () => {
+      window.removeEventListener('resize', place);
+      window.removeEventListener('scroll', place, true);
+    };
+  }, [open, align]);
+
+
   useEffect(() => {
     if (!open) return;
     listRef.current?.focus();
     const onPointer = (e: MouseEvent) => {
-      if (!rootRef.current?.contains(e.target as Node)) setOpen(false);
+      const target = e.target as Node;
+      if (!rootRef.current?.contains(target) && !listRef.current?.contains(target)) setOpen(false);
     };
     document.addEventListener('mousedown', onPointer);
     return () => document.removeEventListener('mousedown', onPointer);
@@ -68,7 +96,7 @@ export function MenuSelect<T extends string>({ value, options, onChange, label, 
       Enter: () => pick(active),
       ' ': () => pick(active),
       Escape: () => close(),
-      Tab: () => setOpen(false),
+      Tab: () => close(),
     };
     const action = keys[e.key];
     if (!action) return;
@@ -104,7 +132,7 @@ export function MenuSelect<T extends string>({ value, options, onChange, label, 
         </svg>
       </button>
 
-      {open && (
+      {open && createPortal(
         <ul
           ref={listRef}
           id={listId}
@@ -113,10 +141,8 @@ export function MenuSelect<T extends string>({ value, options, onChange, label, 
           aria-label={label}
           aria-activedescendant={`${listId}-${active}`}
           onKeyDown={onListKey}
-          className={cn(
-            'kk-fade-in absolute top-full z-30 mt-1 min-w-full overflow-hidden rounded-ui border border-border bg-surface py-1 shadow-lg focus:outline-none',
-            align === 'right' ? 'right-0' : 'left-0',
-          )}
+          style={{ position: 'fixed', ...pos, opacity: pos ? 1 : 0 }}
+          className="kk-fade-in z-50 overflow-hidden rounded-ui border border-border bg-surface py-1 shadow-lg focus:outline-none"
         >
           {options.map((o, i) => {
             const selected = o.value === value;
@@ -142,7 +168,8 @@ export function MenuSelect<T extends string>({ value, options, onChange, label, 
               </li>
             );
           })}
-        </ul>
+        </ul>,
+        document.body,
       )}
     </div>
   );

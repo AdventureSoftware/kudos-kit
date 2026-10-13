@@ -34,11 +34,10 @@ export default async function OverviewPage({ searchParams }: { searchParams: Pro
   const s: Stats = await statsRes.json();
   const projects: string[] = await projectsRes.json();
 
-  /** Link to the feedback list, keeping the current project filter. */
   const listHref = (extra: Record<string, string> = {}) => {
     const p = new URLSearchParams({ ...(project ? { project } : {}), ...extra });
     const q = p.toString();
-    return `/admin/feedback${q ? `?${q}` : ''}`;
+    return `/feedback${q ? `?${q}` : ''}`;
   };
 
   return (
@@ -48,7 +47,7 @@ export default async function OverviewPage({ searchParams }: { searchParams: Pro
           <h1 className="text-lg font-semibold">Overview</h1>
           <p className="text-muted">{project ? `Project: ${project}` : projects.length > 1 ? 'All projects' : projects[0] ?? 'No projects yet'}</p>
         </div>
-        <ProjectSwitcher projects={projects} value={project} basePath="/admin" />
+        <ProjectSwitcher projects={projects} value={project} basePath="/" />
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -105,7 +104,7 @@ export default async function OverviewPage({ searchParams }: { searchParams: Pro
               label: p.project,
               value: p.total,
               note: p.new > 0 ? `${p.new} new` : undefined,
-              href: `/admin/feedback?project=${encodeURIComponent(p.project)}`,
+              href: `/feedback?project=${encodeURIComponent(p.project)}`,
             }))}
           />
         </Card>
