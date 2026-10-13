@@ -3,6 +3,8 @@ import type { NextConfig } from 'next';
 const API_URL = process.env.NESTJS_API_URL ?? 'http://localhost:3000';
 
 const nextConfig: NextConfig = {
+  // Builds a small self-contained server (.next/standalone/server.js) for the Docker image.
+  output: 'standalone',
   // The browser only talks to the dashboard's own address. These paths are passed on to
   // NestJS, the same way nginx does in production, so local development matches it:
   //   /api/auth/*   Better Auth (the session cookie belongs to the dashboard)

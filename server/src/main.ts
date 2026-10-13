@@ -1,4 +1,5 @@
 import { NestFactory } from '@nestjs/core';
+import type { NestExpressApplication } from '@nestjs/platform-express';
 import { ValidationPipe } from '@nestjs/common';
 import { json, urlencoded, type NextFunction, type Request, type Response } from 'express';
 import { AppModule } from './app.module';
@@ -8,7 +9,11 @@ const BODY_LIMIT = '256kb';
 
 async function bootstrap() {
   // Better Auth reads the raw body of /api/auth itself, so Nest's parser is off...
-  const app = await NestFactory.create(AppModule, { bodyParser: false });
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, { bodyParser: false });
+
+  // Behind nginx or Caddy (and Docker), the visitor's IP arrives in X-Forwarded-For.
+  // Trust it only from local and private-network addresses, i.e. from the proxy itself.
+  app.set('trust proxy', process.env.TRUST_PROXY ?? 'loopback, linklocal, uniquelocal');
 
   // ...and re-added here, with an explicit size limit, for every other route.
   const jsonParser = json({ limit: BODY_LIMIT });

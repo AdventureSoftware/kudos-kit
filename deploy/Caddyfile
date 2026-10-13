@@ -1,0 +1,25 @@
+# Used by the optional "caddy" service in docker-compose.yml (servers without nginx).
+# Caddy gets and renews the HTTPS certificate for $DOMAIN by itself.
+# It replaces X-Forwarded-For with the visitor's address, which Kudos Kit relies on.
+
+{$DOMAIN} {
+	encode zstd gzip
+
+	# Only these paths go to the API. The rest of /v1 is internal (used by the dashboard).
+	@feedback path /v1/feedback
+	handle @feedback {
+		request_body {
+			max_size 256KB
+		}
+		reverse_proxy server:3000
+	}
+
+	@api path /api/auth/* /kkw.js
+	handle @api {
+		reverse_proxy server:3000
+	}
+
+	handle {
+		reverse_proxy client:3001
+	}
+}
