@@ -1,0 +1,136 @@
+
+#   ./scripts/setup.sh kudoskit.io     once: creates .env with fresh secrets
+#   docker compose up -d --build       start (or update) everything
+#
+# Without a reverse proxy already on the server, also start Caddy, which gets HTTPS
+# certificates by itself:   docker compose --profile caddy up -d --build
+# With nginx already on the server, use deploy/nginx/kudoskit.conf instead (see DEPLOY.md).
+
+name: kudoskit
+
+x-db-env: &db-env
+  DB_HOST: db
+  DB_PORT: "5432"
+  DB_NAME: feedback
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: feedback
+      POSTGRES_USER: kudoskit
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Run ./scripts/setup.sh first (POSTGRES_PASSWORD is missing in .env)}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U kudoskit -d feedback"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+
+  # Creates the database roles and applies db/migrations, then exits. Runs on every start.
+  migrate:
+    image: postgres:16-alpine
+    restart: "no"
+    depends_on:
+      db: { condition: service_healthy }
+    environment:
+      PGHOST: db
+      PGUSER: kudoskit
+      PGPASSWORD: ${POSTGRES_PASSWORD}
+      PGDATABASE: feedback
+      DB_INGEST_PASSWORD: ${DB_INGEST_PASSWORD:?DB_INGEST_PASSWORD is missing in .env (run ./scripts/setup.sh first)}
+      DB_ADMIN_PASSWORD: ${DB_ADMIN_PASSWORD:?DB_ADMIN_PASSWORD is missing in .env (run ./scripts/setup.sh first)}
+    volumes:
+      - ./db:/db:ro
+    entrypoint: ["sh", "/db/migrate.sh"]
+
+  server:
+    build:
+      context: .
+      dockerfile: server/Dockerfile
+    image: kudoskit-server
+    restart: unless-stopped
+    depends_on:
+      migrate: { condition: service_completed_successfully }
+    environment:
+      <<: *db-env
+      NODE_ENV: production
+      PORT: "3000"
+      DB_INGEST_USER: feedback_ingest
+      DB_INGEST_PASSWORD: ${DB_INGEST_PASSWORD}
+      DB_ADMIN_USER: feedback_admin
+      DB_ADMIN_PASSWORD: ${DB_ADMIN_PASSWORD}
+      DATABASE_URL: postgresql://feedback_admin:${DB_ADMIN_PASSWORD}@db:5432/feedback
+      ADMIN_URL: https://${DOMAIN:?DOMAIN is missing in .env (run ./scripts/setup.sh first)}
+      BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:?BETTER_AUTH_SECRET is missing in .env (run ./scripts/setup.sh first)}
+      TURNSTILE_SECRET: ${TURNSTILE_SECRET:-}
+      BREVO_API_KEY: ${BREVO_API_KEY:-}
+      BREVO_FROM_EMAIL: ${BREVO_FROM_EMAIL:-}
+      BREVO_TO_EMAIL: ${BREVO_TO_EMAIL:-}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
+      APPLE_SERVICES_ID: ${APPLE_SERVICES_ID:-}
+      APPLE_TEAM_ID: ${APPLE_TEAM_ID:-}
+      APPLE_KEY_ID: ${APPLE_KEY_ID:-}
+      APPLE_PRIVATE_KEY_PATH: ${APPLE_PRIVATE_KEY_PATH:-}
+      FEEDBACK_RETENTION_DAYS: ${FEEDBACK_RETENTION_DAYS:-90}
+    volumes:
+      - ./secrets:/app/secrets:ro   # e.g. the Apple sign-in key (.p8)
+    ports:
+      - "127.0.0.1:${SERVER_PORT:-3100}:3000"   # only reachable from this machine (the proxy)
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:3000/v1/setup/status >/dev/null || exit 1"]
+      interval: 10s
+      timeout: 5s
+      start_period: 20s
+      retries: 6
+
+  client:
+    build:
+      context: ./client
+      args:
+        NESTJS_API_URL: http://server:3000
+    image: kudoskit-client
+    restart: unless-stopped
+    depends_on:
+      server: { condition: service_healthy }
+    environment:
+      NESTJS_API_URL: http://server:3000
+      TURNSTILE_SITE_KEY: ${TURNSTILE_SITE_KEY:-}
+      PRIVACY_OPERATOR: ${PRIVACY_OPERATOR:-}
+      PRIVACY_CONTACT_EMAIL: ${PRIVACY_CONTACT_EMAIL:-}
+      PRIVACY_HOSTING: ${PRIVACY_HOSTING:-}
+      PRIVACY_AUTHORITY: ${PRIVACY_AUTHORITY:-}
+    ports:
+      - "127.0.0.1:${CLIENT_PORT:-3101}:3001"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:3001/privacy >/dev/null || exit 1"]
+      interval: 10s
+      timeout: 5s
+      start_period: 20s
+      retries: 6
+
+  # Optional HTTPS front door for servers without nginx:  docker compose --profile caddy up -d
+  caddy:
+    profiles: ["caddy"]
+    image: caddy:2-alpine
+    restart: unless-stopped
+    depends_on:
+      client: { condition: service_healthy }
+    environment:
+      DOMAIN: ${DOMAIN}
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+
+volumes:
+  pgdata:
+  caddy_data:
+  caddy_config:

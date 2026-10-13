@@ -2,7 +2,8 @@
 -- Tables for Better Auth (email + password, Google, GitHub) and its organization plugin.
 -- Generated from Better Auth 1.7.7's schema, renamed to this project's style (plural,
 -- snake_case). The Prisma models in server/prisma/schema.prisma map onto these names.
-
+--
+-- Applied automatically by db/migrate.sh (safe to run again).
 
 BEGIN;
 

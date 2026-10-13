@@ -1,10 +1,8 @@
 -- 002_project_refs.sql
 -- Per-project references for feedback, e.g. CP-12 = the 12th report for Colorpage.
 --
--- Run once, as the database owner (not as feedback_ingest / feedback_admin):
---   psql -d feedback -f db/002_project_refs.sql
--- Safe to run on a fresh install (after schema.sql, roles.sql, seed.sql) and on an
--- existing database: existing feedback is numbered in the order it was received.
+-- Applied automatically by db/migrate.sh (safe to run again).
+-- Existing feedback is numbered in the order it was received.
 
 BEGIN;
 
