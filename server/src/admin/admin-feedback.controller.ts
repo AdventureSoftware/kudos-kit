@@ -1,15 +1,30 @@
-import { Controller, Delete, Get, HttpCode, Param, Patch, Query, UseGuards } from '@nestjs/common';
-import { JwtAuthGuard } from './jwt-auth.guard';
+import { Controller, Delete, Get, HttpCode, Param, Patch, Query } from '@nestjs/common';
+import { OrgRoles } from '@thallesp/nestjs-better-auth';
 import { AdminFeedbackService } from './admin-feedback.service';
+import { AdminStatsService, StatsResponse } from './admin-stats.service';
 
+/** Every route needs a signed-in team member. Deleting needs owner or admin. */
 @Controller('v1/admin')
-@UseGuards(JwtAuthGuard)
+@OrgRoles(['owner', 'admin', 'member'])
 export class AdminFeedbackController {
-  constructor(private adminFeedback: AdminFeedbackService) {}
+  constructor(
+    private adminFeedback: AdminFeedbackService,
+    private adminStats: AdminStatsService,
+  ) {}
+
+  @Get('stats')
+  async stats(@Query('project') project?: string): Promise<StatsResponse> {
+    return this.adminStats.stats(project || undefined);
+  }
 
   @Get('feedback')
-  async list(@Query() query: { project?: string; status?: string; page?: string }) {
+  async list(@Query() query: { project?: string; status?: string; type?: string; q?: string; page?: string; sort?: string; dir?: string }) {
     return this.adminFeedback.list(query);
+  }
+
+  @Get('feedback/:id')
+  async get(@Param('id') id: string) {
+    return this.adminFeedback.get(id);
   }
 
   @Get('projects')
@@ -22,7 +37,9 @@ export class AdminFeedbackController {
     return this.adminFeedback.cycleStatus(id);
   }
 
+  /** Permanent (GDPR erasure), so limited to owners and admins. */
   @Delete('feedback/:id')
+  @OrgRoles(['owner', 'admin'])
   @HttpCode(204)
   async delete(@Param('id') id: string): Promise<void> {
     return this.adminFeedback.delete(id);

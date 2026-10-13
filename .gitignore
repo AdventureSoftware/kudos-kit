@@ -14,3 +14,4 @@ yarn-error.log*
 /.claude/
 /.idea/
 widget/tmp/
+/docs/sign-in-providers.md

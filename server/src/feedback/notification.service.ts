@@ -35,7 +35,7 @@ export class NotificationService {
           textContent: [
             payload.message.slice(0, 200),
             '',
-            `${adminUrl}/admin`,
+            `${adminUrl}/feedback?item=${payload.id}`,
           ].join('\n'),
         }),
       });
