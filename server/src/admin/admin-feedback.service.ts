@@ -14,7 +14,7 @@ const SORTABLE = ['created_at', 'project', 'type', 'status'] as const;
 type SortField = (typeof SORTABLE)[number];
 
 const STATUSES = ['new', 'triaged', 'done'] as const;
-const TYPES = ['bug', 'idea', 'other'] as const;
+const TYPES = ['bug', 'idea', 'praise', 'other'] as const;
 const MAX_QUERY = 100;
 /** A reference such as "CP-12" (case-insensitive). */
 const REF_PATTERN = /^([A-Za-z][A-Za-z0-9]{0,4})-(\d{1,9})$/;
@@ -25,6 +25,8 @@ interface ListFilters {
   type?: string;
   /** Free-text search over message and email, or an exact reference like CP-12. */
   q?: string;
+  /** "1": only praise the sender agreed may be shown publicly. */
+  testimonial?: string;
   page?: string;
   sort?: string;
   dir?: string;
@@ -60,6 +62,7 @@ export class AdminFeedbackService {
     const base: Prisma.FeedbackWhereInput = {
       ...(filters.project ? { project: filters.project } : {}),
       ...(type ? { type } : {}),
+      ...(filters.testimonial === '1' ? { testimonial_ok: true } : {}),
       ...(q ? this.searchWhere(q) : {}),
     };
     const where: Prisma.FeedbackWhereInput = { ...base, ...(status ? { status } : {}) };
@@ -81,6 +84,8 @@ export class AdminFeedbackService {
           user_ctx: true,
           context: true,
           status: true,
+          testimonial_ok: true,
+          rating: true,
           created_at: true,
           projectRef: { select: { prefix: true } },
         },
@@ -140,6 +145,10 @@ export class AdminFeedbackService {
         console_logs: true,
         errors: true,
         status: true,
+        testimonial_ok: true,
+        testimonial_name: true,
+        testimonial_at: true,
+        rating: true,
         created_at: true,
         projectRef: { select: { prefix: true } },
       },
@@ -168,6 +177,17 @@ export class AdminFeedbackService {
     await this.prisma.feedback.update({
       where: { id: BigInt(id) },
       data: { status: next },
+    });
+  }
+
+  /**
+   * The sender asked us to stop using their praise publicly. Keeps the message and when consent
+   * was given (the record), clears the name. Does nothing if there was no consent.
+   */
+  async withdrawTestimonial(id: string): Promise<void> {
+    await this.prisma.feedback.updateMany({
+      where: { id: parseId(id), testimonial_ok: true },
+      data: { testimonial_ok: false, testimonial_name: null },
     });
   }
 

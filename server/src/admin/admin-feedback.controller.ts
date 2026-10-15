@@ -3,7 +3,7 @@ import { OrgRoles } from '@thallesp/nestjs-better-auth';
 import { AdminFeedbackService } from './admin-feedback.service';
 import { AdminStatsService, StatsResponse } from './admin-stats.service';
 
-/** Every route needs a signed-in team member. Deleting needs owner or admin. */
+/** Every route needs a signed-in team member. Deleting and withdrawing consent need owner or admin. */
 @Controller('v1/admin')
 @OrgRoles(['owner', 'admin', 'member'])
 export class AdminFeedbackController {
@@ -18,7 +18,7 @@ export class AdminFeedbackController {
   }
 
   @Get('feedback')
-  async list(@Query() query: { project?: string; status?: string; type?: string; q?: string; page?: string; sort?: string; dir?: string }) {
+  async list(@Query() query: { project?: string; status?: string; type?: string; testimonial?: string; q?: string; page?: string; sort?: string; dir?: string }) {
     return this.adminFeedback.list(query);
   }
 
@@ -35,6 +35,14 @@ export class AdminFeedbackController {
   @Patch('feedback/:id/status')
   async cycleStatus(@Param('id') id: string): Promise<void> {
     return this.adminFeedback.cycleStatus(id);
+  }
+
+  /** The sender withdrew consent to use their praise as a testimonial (GDPR), so owners and admins. */
+  @Patch('feedback/:id/testimonial/withdraw')
+  @OrgRoles(['owner', 'admin'])
+  @HttpCode(204)
+  async withdrawTestimonial(@Param('id') id: string): Promise<void> {
+    return this.adminFeedback.withdrawTestimonial(id);
   }
 
   /** Permanent (GDPR erasure), so limited to owners and admins. */

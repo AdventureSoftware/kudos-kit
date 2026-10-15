@@ -2,7 +2,13 @@ import { Injectable, BadRequestException } from '@nestjs/common';
 import { PrismaIngestService } from '../prisma/prisma-ingest.service';
 import { TurnstileService } from './turnstile.service';
 import { NotificationService } from './notification.service';
-import { CreateFeedbackDto } from './dto/create-feedback.dto';
+import { CreateFeedbackDto, FeedbackType } from './dto/create-feedback.dto';
+
+export function testimonialConsent(dto: Pick<CreateFeedbackDto, 'type' | 'testimonialOk' | 'testimonialName'>) {
+  const ok = dto.type === FeedbackType.PRAISE && dto.testimonialOk === true;
+  const name = ok ? (dto.testimonialName ?? '').replace(/\s+/g, ' ').trim() || null : null;
+  return { ok, name };
+}
 
 @Injectable()
 export class FeedbackService {
@@ -24,15 +30,22 @@ export class FeedbackService {
     const valid = await this.turnstile.verify(dto.turnstileToken, ip);
     if (!valid) throw new BadRequestException('CAPTCHA verification failed');
 
+    const testimonial = testimonialConsent(dto);
+    const rating = dto.type === FeedbackType.BUG ? null : (dto.rating ?? null);
+
     const result = await this.prisma.$queryRaw<{ id: bigint }[]>`
-      INSERT INTO feedback (project, type, message, email, user_ctx, context, console_logs, errors, ip)
+      INSERT INTO feedback (project, type, message, email, user_ctx, context, console_logs, errors, ip,
+                            testimonial_ok, testimonial_name, testimonial_at, rating)
       VALUES (
         ${dto.project}, ${dto.type}, ${dto.message}, ${dto.email ?? null},
         ${dto.user ? JSON.stringify(dto.user) : null}::jsonb,
         ${dto.context ? JSON.stringify(dto.context) : null}::jsonb,
         ${dto.console ? JSON.stringify(dto.console) : null}::jsonb,
         ${dto.errors ? JSON.stringify(dto.errors) : null}::jsonb,
-        ${ip}::inet
+        ${ip}::inet,
+        ${testimonial.ok}, ${testimonial.name},
+        CASE WHEN ${testimonial.ok} THEN now() END,
+        ${rating}::smallint
       )
       RETURNING id
     `;
@@ -42,6 +55,8 @@ export class FeedbackService {
       type: dto.type,
       message: dto.message,
       id: result[0]?.id?.toString() ?? '',
+      testimonial: testimonial.ok,
+      rating,
     }).catch(() => {});
   }
 }

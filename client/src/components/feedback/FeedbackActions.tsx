@@ -1,4 +1,4 @@
-import { cycleStatus, deleteFeedback, deleteFeedbackAndClose } from '@/app/(dashboard)/actions';
+import { cycleStatus, deleteFeedback, deleteFeedbackAndClose, withdrawTestimonial } from '@/app/(dashboard)/actions';
 import { Badge, ConfirmButton, statusTone } from '@/components/ui';
 
 const NEXT_STATUS: Record<string, string> = { new: 'triaged', triaged: 'done', done: 'new' };
@@ -31,6 +31,24 @@ export function DeleteButton({ id, label, closeHref }: { id: string; label: stri
         pendingLabel="Deleting…"
       >
         Delete
+      </ConfirmButton>
+    </form>
+  );
+}
+
+/** When the sender asks us to stop using their praise publicly. */
+export function WithdrawTestimonialButton({ id, label }: { id: string; label: string }) {
+  return (
+    <form action={withdrawTestimonial.bind(null, id)}>
+      <ConfirmButton
+        variant="danger"
+        size="sm"
+        title={`Withdraw consent for ${label}?`}
+        message="Do this when the sender asks us to stop using their message publicly. The message stays in the inbox, but it can no longer be used as a testimonial and the name to show is removed. Also take it down from any page where it’s already published."
+        confirmLabel="Withdraw consent"
+        pendingLabel="Withdrawing…"
+      >
+        Withdraw consent
       </ConfirmButton>
     </form>
   );

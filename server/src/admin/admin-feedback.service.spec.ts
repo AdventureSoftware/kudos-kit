@@ -10,6 +10,7 @@ const mockPrisma = () => ({
     groupBy: jest.fn().mockResolvedValue([]),
     findUnique: jest.fn(),
     update: jest.fn(),
+    updateMany: jest.fn().mockResolvedValue({ count: 1 }),
     delete: jest.fn(),
   },
   project: {
@@ -35,7 +36,7 @@ describe('AdminFeedbackService', () => {
   it('returns paginated feedback with serialized BigInt ids', async () => {
     (prisma.feedback.findMany as jest.Mock).mockResolvedValue([
       { id: BigInt(1), project: 'colorpage', number: 12, type: 'bug', message: 'test',
-        email: null, user_ctx: null, context: null, status: 'new', created_at: new Date(),
+        email: null, user_ctx: null, context: null, status: 'new', testimonial_ok: false, created_at: new Date(),
         projectRef: { prefix: 'CP' } },
     ]);
     (prisma.feedback.count as jest.Mock).mockResolvedValue(1);
@@ -83,6 +84,23 @@ describe('AdminFeedbackService', () => {
       expect.objectContaining({ where: { type: 'bug', status: 'new' } }),
     );
     await service.list({ type: 'evil', status: 'whatever' });
+    expect(prisma.feedback.findMany).toHaveBeenLastCalledWith(expect.objectContaining({ where: {} }));
+  });
+
+  it('accepts praise as a type', async () => {
+    (prisma.feedback.findMany as jest.Mock).mockResolvedValue([]);
+    (prisma.feedback.count as jest.Mock).mockResolvedValue(0);
+    await service.list({ type: 'praise' });
+    expect(prisma.feedback.findMany).toHaveBeenCalledWith(expect.objectContaining({ where: { type: 'praise' } }));
+  });
+
+  it('shows only usable testimonials with testimonial=1, and ignores other values', async () => {
+    (prisma.feedback.findMany as jest.Mock).mockResolvedValue([]);
+    (prisma.feedback.count as jest.Mock).mockResolvedValue(0);
+    await service.list({ testimonial: '1' });
+    expect(prisma.feedback.findMany).toHaveBeenCalledWith(expect.objectContaining({ where: { testimonial_ok: true } }));
+    expect(prisma.feedback.groupBy).toHaveBeenCalledWith(expect.objectContaining({ where: { testimonial_ok: true } }));
+    await service.list({ testimonial: 'yes' });
     expect(prisma.feedback.findMany).toHaveBeenLastCalledWith(expect.objectContaining({ where: {} }));
   });
 
@@ -179,6 +197,19 @@ describe('AdminFeedbackService', () => {
     expect(prisma.feedback.update).toHaveBeenCalledWith(
       expect.objectContaining({ data: { status: 'new' } }),
     );
+  });
+
+  it('withdraws testimonial consent: clears the name, keeps the message', async () => {
+    await service.withdrawTestimonial('9');
+    expect(prisma.feedback.updateMany).toHaveBeenCalledWith({
+      where: { id: BigInt(9), testimonial_ok: true },
+      data: { testimonial_ok: false, testimonial_name: null },
+    });
+  });
+
+  it('rejects a bad id when withdrawing consent', async () => {
+    await expect(service.withdrawTestimonial('x')).rejects.toBeInstanceOf(BadRequestException);
+    expect(prisma.feedback.updateMany).not.toHaveBeenCalled();
   });
 
   it('deletes feedback by id', async () => {

@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Badge, Button, Card, FormError } from '@/components/ui';
+import { ProviderIcon } from '@/components/auth/ProviderIcons';
 import { authClient, authErrorMessage } from '@/lib/auth-client';
 import { PROVIDER_NAMES, type SocialProvider } from '@/lib/social';
 
@@ -73,11 +74,16 @@ export function SignInMethods({ methods, providers, email, notice = null }: Sign
           const name = PROVIDER_NAMES[provider];
           return (
             <li key={provider} className="flex flex-wrap items-center justify-between gap-2 py-3">
-              <div>
-                <p className="font-medium text-text">
-                  {name} {connected && <Badge tone="success" className="ml-1 align-middle">Connected</Badge>}
-                </p>
-                <p className="text-xs text-muted">{HINTS[provider]}</p>
+              <div className="flex items-start gap-3">
+                <span className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-ui border border-border bg-surface text-text">
+                  <ProviderIcon provider={provider} className="size-4" />
+                </span>
+                <div>
+                  <p className="font-medium text-text">
+                    {name} {connected && <Badge tone="success" className="ml-1 align-middle">Connected</Badge>}
+                  </p>
+                  <p className="text-xs text-muted">{HINTS[provider]}</p>
+                </div>
               </div>
               {connected ? (
                 <Button
@@ -104,6 +110,7 @@ export function SignInMethods({ methods, providers, email, notice = null }: Sign
                     false)
                   }
                 >
+                  <ProviderIcon provider={provider} className="size-3.5" />
                   {busy === provider ? 'Opening…' : `Connect ${name}`}
                 </Button>
               )}

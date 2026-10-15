@@ -2,19 +2,27 @@
 
 
 :root {
-  /* Brand color: logo, favicon, app icon. Same in light and dark on purpose. */
-  --brand: #0e7490;
+  /* Brand color (Berry): logo, favicon, app icon, avatar. Same in light and dark on purpose. */
+  --brand: #be185d;
 
-  --bg: #f7f7f8;
+  /* Neutral greys. The page is a step darker than the white cards so they stand out,
+     and borders are strong enough to frame them. Berry is kept for accents and table headers. */
+  --bg: #f4f4f6;
   --surface: #ffffff;
-  --surface-muted: #f1f1f3;
-  --border: #e4e4e7;
+  --surface-muted: #f0f0f3;
+  --border: #e0e0e6;
   --text: #18181b;
-  --text-muted: #71717a;
+  --text-muted: #62626c;
+  --card-shadow: 0 1px 2px rgb(24 24 27 / 0.05), 0 2px 8px rgb(24 24 27 / 0.04);
 
-  --accent: #0e7490;
-  --accent-hover: #155e75;
-  --accent-soft: #ecfeff;
+  /* Table headers: berry tint. */
+  --table-head-bg: #fbe3ee;
+  --table-head-text: #9d174d;
+  --table-head-border: #f3c5da;
+
+  --accent: #be185d;
+  --accent-hover: #9d174d;
+  --accent-soft: #fdf2f8;
   --accent-contrast: #ffffff;
 
   --danger: #dc2626;
@@ -30,16 +38,21 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg: #0c0c0e;
-    --surface: #17171a;
-    --surface-muted: #202024;
-    --border: #2e2e33;
-    --text: #ececef;
-    --text-muted: #a1a1aa;
+    --bg: #0e0b0d;
+    --surface: #191417;
+    --surface-muted: #241c21;
+    --border: #352a30;
+    --text: #efeaed;
+    --text-muted: #b0a3aa;
+    --card-shadow: none;
 
-    --accent: #22d3ee;
-    --accent-hover: #67e8f9;
-    --accent-soft: #083344;
+    --table-head-bg: #241c21;
+    --table-head-text: #d3abbf;
+    --table-head-border: #352a30;
+
+    --accent: #f472b6;
+    --accent-hover: #f9a8d4;
+    --accent-soft: #500724;
     --accent-contrast: #0c0c0e;
 
     --danger: #f87171;
@@ -61,6 +74,9 @@
   --color-border: var(--border);
   --color-text: var(--text);
   --color-muted: var(--text-muted);
+  --color-table-head: var(--table-head-bg);
+  --color-table-head-text: var(--table-head-text);
+  --color-table-head-border: var(--table-head-border);
   --color-accent: var(--accent);
   --color-accent-hover: var(--accent-hover);
   --color-accent-soft: var(--accent-soft);
@@ -73,14 +89,20 @@
   --color-success: var(--success);
   --color-success-soft: var(--success-soft);
   --radius-ui: var(--radius);
-  --font-sans: var(--font-geist-sans);
+  --font-sans: var(--font-brand-sans);
   --font-mono: var(--font-geist-mono);
 }
 
 body {
   background: var(--bg);
   color: var(--text);
-  font-family: var(--font-geist-sans), system-ui, sans-serif;
+  font-family: var(--font-brand-sans), system-ui, sans-serif;
+  font-weight: 500; /* Nunito's regular weight is thin at 14px */
+}
+
+/* Mac "antialiased" smoothing thins dark text on light backgrounds; keep it only for dark mode. */
+@media (prefers-color-scheme: light) {
+  html.antialiased { -webkit-font-smoothing: auto; -moz-osx-font-smoothing: auto; }
 }
 
 :focus-visible {

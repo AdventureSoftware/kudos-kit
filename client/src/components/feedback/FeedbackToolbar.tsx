@@ -17,7 +17,7 @@ const STATUS_TABS: Array<{ value?: Status; label: string; count: keyof FeedbackL
   { value: 'done', label: 'Done', count: 'done' },
 ];
 
-const TYPE_LABELS: Record<FeedbackType, string> = { bug: 'Bugs', idea: 'Ideas', other: 'Other' };
+const TYPE_LABELS: Record<FeedbackType, string> = { bug: 'Bugs', idea: 'Ideas', praise: 'Praise', other: 'Other' };
 
 interface FeedbackToolbarProps {
   query: FeedbackQuery;
@@ -55,7 +55,7 @@ export function FeedbackToolbar({ query, projects, counts }: FeedbackToolbarProp
 
   return (
     <div className="flex flex-wrap items-center justify-between gap-3">
-      <nav aria-label="Filter by status" className="inline-flex rounded-ui bg-surface-muted p-1">
+      <nav aria-label="Filter by status" className="inline-flex rounded-ui border border-border bg-surface-muted p-1">
         {STATUS_TABS.map((tab) => {
           const active = query.status === tab.value;
           return (
@@ -93,6 +93,21 @@ export function FeedbackToolbar({ query, projects, counts }: FeedbackToolbarProp
           onChange={(v) => go({ type: (v || undefined) as FeedbackType | undefined })}
         />
 
+        <Link
+          href={feedbackHref(query, { testimonial: query.testimonial ? undefined : true, page: 1, item: undefined })}
+          scroll={false}
+          aria-pressed={query.testimonial ? 'true' : 'false'}
+          title="Praise the sender agreed may be shown publicly"
+          className={cn(
+            'inline-flex h-9 items-center gap-1.5 rounded-ui border px-3 text-sm font-medium transition-colors',
+            query.testimonial
+              ? 'border-success bg-success-soft text-success'
+              : 'border-border bg-surface text-muted hover:text-text',
+          )}
+        >
+          <span aria-hidden>★</span> Testimonials
+        </Link>
+
         <label className="relative block w-full sm:w-72">
           <span className="sr-only">Search feedback</span>
           <svg aria-hidden viewBox="0 0 20 20" className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted" fill="none" stroke="currentColor" strokeWidth="1.8">
@@ -114,7 +129,7 @@ export function FeedbackToolbar({ query, projects, counts }: FeedbackToolbarProp
 
         {isFiltered(query) && (
           <Link
-            href={feedbackHref(query, { project: undefined, status: undefined, type: undefined, q: undefined, page: 1, item: undefined })}
+            href={feedbackHref(query, { project: undefined, status: undefined, type: undefined, testimonial: undefined, q: undefined, page: 1, item: undefined })}
             scroll={false}
             className="text-sm font-medium text-muted hover:text-text"
           >

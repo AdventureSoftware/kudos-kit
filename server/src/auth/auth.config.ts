@@ -92,6 +92,16 @@ export function createAuth({ database, store, mailer, settings, schema, organiza
       },
     },
 
+    // Rate limits and the login list are per visitor IP. It comes from X-Forwarded-For, which
+    // must hold exactly one address: nginx sets it to $remote_addr, Caddy replaces it, and the
+    // dashboard passes it on for its server-side calls (client/src/lib/auth.ts). A header with
+    // several addresses is ignored (it could be faked), so never let the proxy append to it.
+    advanced: {
+      ipAddress: {
+        ipAddressHeaders: ['x-forwarded-for'],
+      },
+    },
+
     databaseHooks: {
       user: {
         create: {

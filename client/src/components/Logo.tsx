@@ -1,12 +1,15 @@
 import { cn } from '@/lib/cn';
 
-export const LOGO_BUBBLE =
-  'M14 8h36a10 10 0 0 1 10 10v22a10 10 0 0 1-10 10H26l-12 9v-9a10 10 0 0 1-10-10V18A10 10 0 0 1 14 8z';
-export const LOGO_SPARKLE =
-  'M32 16c1.2 6.6 3.4 8.8 10 10-6.6 1.2-8.8 3.4-10 10-1.2-6.6-3.4-8.8-10-10 6.6-1.2 8.8-3.4 10-10z';
+/** Round speech bubble with a tail at the bottom left (64×64 grid). */
+export const LOGO_BUBBLE = 'M32 6a24 24 0 1 1-12.6 44.4L8 56l4.6-11.6A24 24 0 0 1 32 6z';
+/** Right eye: a sparkle, the "kudos" moment. */
+export const LOGO_STAR =
+  'M39 18c.7 3.8 2 5.1 5.8 5.8-3.8.7-5.1 2-5.8 5.8-.7-3.8-2-5.1-5.8-5.8 3.8-.7 5.1-2 5.8-5.8z';
+export const LOGO_SMILE = 'M23 33q9 9 18 0';
+/** Left eye (circle). */
+export const LOGO_EYE = { cx: 25, cy: 24, r: 3.2 };
 
 interface LogoMarkProps {
-
   size?: number;
   className?: string;
   title?: string;
@@ -25,7 +28,9 @@ export function LogoMark({ size = 24, className, title }: LogoMarkProps) {
     >
       {title && <title>{title}</title>}
       <path d={LOGO_BUBBLE} className="fill-brand" />
-      <path d={LOGO_SPARKLE} fill="#fff" />
+      <circle {...LOGO_EYE} fill="#fff" />
+      <path d={LOGO_STAR} fill="#fff" />
+      <path d={LOGO_SMILE} stroke="#fff" strokeWidth={4.5} strokeLinecap="round" />
     </svg>
   );
 }
@@ -38,7 +43,7 @@ interface LogoProps {
 export function Logo({ size = 24, className }: LogoProps) {
   return (
     <span
-      className={cn('inline-flex items-center font-semibold tracking-tight text-text', className)}
+      className={cn('inline-flex items-center font-extrabold tracking-tight text-text', className)}
       style={{ gap: Math.round(size * 0.35), fontSize: Math.round(size * 0.66) }}
     >
       <LogoMark size={size} />

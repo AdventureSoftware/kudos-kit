@@ -1,4 +1,4 @@
-// server/src/feedback/notification.service.ts
+
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
@@ -7,7 +7,16 @@ interface NotifyPayload {
   type: string;
   message: string;
   id: string;
+  testimonial?: boolean;
+  rating?: number | null;
 }
+
+const SUBJECTS: Record<string, string> = {
+  bug: 'New bug report',
+  idea: 'New idea',
+  praise: 'New praise',
+  other: 'New feedback',
+};
 
 @Injectable()
 export class NotificationService {
@@ -31,10 +40,13 @@ export class NotificationService {
         body: JSON.stringify({
           sender: { email: fromEmail },
           to: [{ email: toEmail }],
-          subject: `[${payload.project}] New ${payload.type} report`,
+          subject: `[${payload.project}] ${SUBJECTS[payload.type] ?? 'New feedback'}`,
           textContent: [
             payload.message.slice(0, 200),
             '',
+            ...(payload.rating ? [`Rating: ${'★'.repeat(payload.rating)}${'☆'.repeat(5 - payload.rating)} (${payload.rating}/5)`] : []),
+            ...(payload.testimonial ? ['✓ May be used as a testimonial.'] : []),
+            ...(payload.rating || payload.testimonial ? [''] : []),
             `${adminUrl}/feedback?item=${payload.id}`,
           ].join('\n'),
         }),

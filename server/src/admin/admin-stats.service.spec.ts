@@ -6,6 +6,7 @@ const mockPrisma = () => ({
   feedback: {
     count: jest.fn(),
     groupBy: jest.fn(),
+    aggregate: jest.fn().mockResolvedValue({ _avg: { rating: 4.333 }, _count: { rating: 3 } }),
   },
   $queryRaw: jest.fn(),
 });
@@ -26,15 +27,17 @@ describe('AdminStatsService', () => {
     prisma.feedback.count
       .mockResolvedValueOnce(6) // total
       .mockResolvedValueOnce(4) // last 7
-      .mockResolvedValueOnce(1); // previous 7
+      .mockResolvedValueOnce(1) // previous 7
+      .mockResolvedValueOnce(2); // testimonials
     prisma.feedback.groupBy
       .mockResolvedValueOnce([
         { status: 'new', _count: { _all: 5 } },
         { status: 'done', _count: { _all: 1 } },
       ])
       .mockResolvedValueOnce([
-        { type: 'bug', _count: { _all: 5 } },
+        { type: 'bug', _count: { _all: 3 } },
         { type: 'idea', _count: { _all: 1 } },
+        { type: 'praise', _count: { _all: 2 } },
       ])
       .mockResolvedValueOnce([
         { project: 'colorpage', status: 'new', _count: { _all: 4 } },
@@ -50,9 +53,31 @@ describe('AdminStatsService', () => {
     const s = await service.stats();
     expect(s.total).toBe(6);
     expect(s.byStatus).toEqual({ new: 5, triaged: 0, done: 1 });
-    expect(s.byType).toEqual({ bug: 5, idea: 1, other: 0 });
+    expect(s.byType).toEqual({ bug: 3, idea: 1, praise: 2, other: 0 });
     expect(s.last7).toBe(4);
     expect(s.prev7).toBe(1);
+  });
+
+  it('counts praise that may be used as a testimonial', async () => {
+    setup();
+    const s = await service.stats();
+    expect(s.testimonials).toBe(2);
+    expect(prisma.feedback.count).toHaveBeenNthCalledWith(4, { where: { testimonial_ok: true } });
+  });
+
+  it('averages the star ratings to one decimal, ignoring feedback without one', async () => {
+    setup();
+    const s = await service.stats('colorpage');
+    expect(s.rating).toEqual({ average: 4.3, count: 3 });
+    expect(prisma.feedback.aggregate).toHaveBeenCalledWith(expect.objectContaining({
+      where: { project: 'colorpage', rating: { not: null } },
+    }));
+  });
+
+  it('reports no average when nobody rated yet', async () => {
+    setup();
+    prisma.feedback.aggregate.mockResolvedValueOnce({ _avg: { rating: null }, _count: { rating: 0 } });
+    expect((await service.stats()).rating).toEqual({ average: null, count: 0 });
   });
 
   it('groups projects with their new count, largest first', async () => {
@@ -76,6 +101,7 @@ describe('AdminStatsService', () => {
     setup();
     await service.stats('colorpage');
     expect(prisma.feedback.count).toHaveBeenNthCalledWith(1, { where: { project: 'colorpage' } });
+    expect(prisma.feedback.count).toHaveBeenNthCalledWith(4, { where: { project: 'colorpage', testimonial_ok: true } });
     for (const call of prisma.feedback.groupBy.mock.calls) {
       expect(call[0].where).toEqual({ project: 'colorpage' });
     }

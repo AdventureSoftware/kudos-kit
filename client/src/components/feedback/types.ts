@@ -6,6 +6,10 @@ export interface FeedbackRow {
   message: string;
   email: string | null;
   status: string;
+  /** Praise the sender agreed may be shown publicly. */
+  testimonial_ok: boolean;
+  /** Optional 1–5 stars. */
+  rating: number | null;
   created_at: string;
 }
 

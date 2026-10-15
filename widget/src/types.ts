@@ -1,33 +1,28 @@
-// widget/src/types.ts
+
 export type ThemeMode = 'light' | 'dark' | 'auto';
 
-/** Colors for one mode. Any key left out keeps the built-in default. */
+
+export type FeedbackKind = 'bug' | 'idea' | 'praise' | 'other';
+
+
 export interface ThemeColors {
-  background?: string;       // panel background
-  fieldBackground?: string;  // inputs and unselected chips
-  text?: string;             // main text
-  mutedText?: string;        // labels, placeholders, privacy note
-  border?: string;           // panel, input and chip borders
-  accent?: string;           // overrides theme.accent in this mode only
-  accentText?: string;       // overrides theme.accentText in this mode only
+  background?: string;
+  fieldBackground?: string;
+  text?: string;
+  mutedText?: string;
+  border?: string;
+  accent?: string;
+  accentText?: string;
 }
 
 export interface FeedbackTheme {
-  /** 'light' (default), 'dark', or 'auto' to follow the user's OS setting. */
   mode?: ThemeMode;
-  /** Primary color: launcher button, active chip, submit button, focus ring. */
   accent?: string;
-  /** Text color on top of the accent color. */
   accentText?: string;
-  /** @deprecated Use accentText. Kept for backwards compatibility. */
   text?: string;
-  /** Corner radius of the panel in px (inputs and buttons scale from it). */
   radius?: number;
-  /** CSS font-family. Use 'inherit' to match the host page. */
   fontFamily?: string;
-  /** Color overrides used in light mode (and in 'auto' when the OS is light). */
   light?: ThemeColors;
-  /** Color overrides used in dark mode (and in 'auto' when the OS is dark). */
   dark?: ThemeColors;
 }
 
@@ -47,8 +42,10 @@ export interface ErrorEntry {
 export interface FeedbackConfig {
   project: string;
   turnstileSiteKey: string;
-  apiUrl?: string;      // base URL of the kudos-kit server; defaults to where kkw.js was loaded from
-  privacyUrl?: string;  // privacy policy link shown in the panel; hidden if omitted
+  apiUrl?: string;
+  privacyUrl?: string;
+  appName?: string;
+  branding?: boolean;
   user?: { id?: string; plan?: string };
   startHidden?: boolean;
   position?: 'bottom-right' | 'bottom-left' | 'top-right' | 'top-left';
@@ -59,13 +56,13 @@ export interface FeedbackConfig {
     max: number;
     maxBytes: number;
     redact: boolean;
-    sendOn: Array<'bug' | 'idea' | 'other'>;
+    sendOn: FeedbackKind[];
   };
 }
 
 export interface FeedbackPayload {
   project: string;
-  type: string;
+  type: FeedbackKind;
   message: string;
   email?: string;
   user?: { id?: string; plan?: string };
@@ -80,6 +77,9 @@ export interface FeedbackPayload {
   };
   console?: ConsoleEntry[];
   errors?: ErrorEntry[];
+  rating?: number;
+  testimonialOk?: boolean;
+  testimonialName?: string;
   hp: string;
   turnstileToken: string;
 }

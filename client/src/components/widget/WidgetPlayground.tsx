@@ -31,7 +31,7 @@ export function WidgetPlayground({ projects, turnstileSiteKey }: WidgetPlaygroun
   const [settings, setSettings] = useState<WidgetSettings>({
     project: projects[0]?.key ?? '',
     mode: 'auto',
-    accent: '#0e7490',
+    accent: '#be185d',
     radius: 8,
     position: 'bottom-right',
   });

@@ -7,7 +7,7 @@ import { getPrivacyOperator } from '@/lib/privacy';
 export const metadata = { title: 'Privacy' };
 
 
-const LAST_UPDATED = '12 October 2026';
+const LAST_UPDATED = '14 October 2026';
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
@@ -18,11 +18,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
   );
 }
 
-/**
- * Public privacy notice for the feedback widget and this dashboard. Facts that depend on
- * the setup (how long feedback is kept, email, Google/Apple) come from the server, so the
- * page stays true when settings change. Who runs it comes from lib/privacy.ts.
- */
+
 export default async function PrivacyPage() {
   await connection(); // read settings on every request, not once at build time
   const [{ emailEnabled, providers, retentionDays }, who] = [await getSetupStatus(), getPrivacyOperator()];
@@ -58,7 +54,7 @@ export default async function PrivacyPage() {
         <Section title="When you send feedback">
           <p>We receive what you write and some technical details that help us understand and fix the problem:</p>
           <ul className="list-disc space-y-1 pl-5">
-            <li>The type (bug, idea or other), your message, and your email address if you give it.</li>
+            <li>The type (bug, idea, praise or other), your message, and your email address if you give it.</li>
             <li>If you are signed in to our app: your account identifier and plan, as the app passes them to the widget.</li>
             <li>The page address and the page you came from, your browser and operating system, screen size, language, the app version and the time.</li>
             <li>Your IP address, to block spam and abuse.</li>
@@ -71,6 +67,18 @@ export default async function PrivacyPage() {
           <p>
             We use this only to fix problems and improve our products, which is our legitimate interest (GDPR Art. 6(1)(f)).
             We don’t sell it, don’t use it for advertising, and the widget itself stores nothing on your device.
+          </p>
+        </Section>
+
+        <Section title="Testimonials">
+          <p>
+            When you send praise, you can tick “You may show my message publicly as a testimonial”. Only then may we show
+            your message publicly, for example on our website, with the name you entered, or as “Anonymous” if you left it
+            empty. We never show your email address. We record when you gave this consent (GDPR Art. 6(1)(a)).
+          </p>
+          <p>
+            It’s optional, and you can withdraw it at any time by writing to {contact}. We then stop using your message
+            and remove it from places we control.
           </p>
         </Section>
 
@@ -100,6 +108,11 @@ export default async function PrivacyPage() {
               {retentionDays > 0
                 ? `Feedback is deleted automatically after ${retentionDays} days, or earlier if you ask.`
                 : 'Feedback is kept until our team deletes it, or until you ask us to.'}
+            </li>
+            <li>
+              Praise you allowed us to use as a testimonial is kept until you withdraw consent or we stop using it.
+              {retentionDays > 0 &&
+                ` After ${retentionDays} days we remove its technical details (IP address, page and browser details, console logs).`}
             </li>
             <li>Logins end after 7 days without use and are then deleted.</li>
             <li>Invitations are deleted 30 days after they expire.</li>
