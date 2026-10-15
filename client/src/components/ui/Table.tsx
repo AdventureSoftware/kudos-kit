@@ -10,7 +10,7 @@ export function Table({ className, ...rest }: React.TableHTMLAttributes<HTMLTabl
 }
 
 const thBase =
-  'border-b border-border bg-surface-muted text-left text-xs font-medium uppercase tracking-wide text-muted';
+  'border-b border-table-head-border bg-table-head text-left text-xs font-bold uppercase tracking-wide text-table-head-text';
 
 export function Th({ className, ...rest }: React.ThHTMLAttributes<HTMLTableCellElement>) {
   return <th className={cn(thBase, 'px-4 py-2.5', className)} {...rest} />;
@@ -35,8 +35,8 @@ export function SortableTh({ label, active, dir, href, className }: SortableThPr
         href={href}
         scroll={false}
         className={cn(
-          'group inline-flex w-full items-center gap-1 px-4 py-2.5 hover:text-text',
-          active && 'text-text',
+          'group inline-flex w-full items-center gap-1 px-4 py-2.5 hover:text-accent-hover',
+          active && 'text-accent-hover',
         )}
       >
         {label}

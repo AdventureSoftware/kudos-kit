@@ -10,20 +10,21 @@ const tones: Record<Tone, string> = {
   success: 'bg-success-soft text-success',
 };
 
-export function Badge({ tone = 'neutral', children, className }: {
+export function Badge({ tone = 'neutral', children, className, title }: {
   tone?: Tone;
   children: React.ReactNode;
   className?: string;
+  title?: string;
 }) {
   return (
-    <span className={cn('inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium', tones[tone], className)}>
+    <span title={title} className={cn('inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold', tones[tone], className)}>
       {children}
     </span>
   );
 }
 
 /** Feedback type → color. */
-export const typeTone: Record<string, Tone> = { bug: 'danger', idea: 'accent', other: 'neutral' };
+export const typeTone: Record<string, Tone> = { bug: 'danger', idea: 'accent', praise: 'success', other: 'neutral' };
 
 /** Feedback status → color. */
 export const statusTone: Record<string, Tone> = { new: 'accent', triaged: 'warning', done: 'success' };

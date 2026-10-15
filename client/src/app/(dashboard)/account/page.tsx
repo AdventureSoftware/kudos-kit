@@ -5,6 +5,7 @@ import { PasswordForm } from '@/components/account/PasswordForm';
 import { ProfileForm } from '@/components/account/ProfileForm';
 import { SessionsCard } from '@/components/account/SessionsCard';
 import { SignInMethods } from '@/components/account/SignInMethods';
+import { SignOutButton } from '@/components/auth/SignOutButton';
 
 export const metadata = { title: 'Account' };
 
@@ -31,9 +32,15 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
 
   return (
     <div className="max-w-2xl space-y-6">
-      <div>
-        <h1 className="text-lg font-semibold">Account</h1>
-        <p className="text-muted">Your name, password and logins.</p>
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-lg font-semibold">Account</h1>
+          <p className="text-muted">Your name, password and logins.</p>
+        </div>
+        {/* On phones there is no sidebar, so Sign out lives here. */}
+        <div className="md:hidden">
+          <SignOutButton />
+        </div>
       </div>
       <ProfileForm name={user.name} email={user.email} role={role ?? 'member'} />
       {has('credential') && <PasswordForm />}

@@ -11,7 +11,9 @@ export const metadata = { title: 'Overview' };
 interface Stats {
   total: number;
   byStatus: { new: number; triaged: number; done: number };
-  byType: { bug: number; idea: number; other: number };
+  byType: { bug: number; idea: number; praise: number; other: number };
+  testimonials: number;
+  rating: { average: number | null; count: number };
   byProject: Array<{ project: string; total: number; new: number }>;
   last7: number;
   prev7: number;
@@ -86,13 +88,28 @@ export default async function OverviewPage({ searchParams }: { searchParams: Pro
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <Card className="p-5">
-          <h2 className="mb-4 font-semibold">By type</h2>
+          <div className="mb-4 flex items-baseline justify-between gap-3">
+            <h2 className="font-semibold">By type</h2>
+            {s.rating.average !== null && (
+              <span className="text-xs text-muted" title="Average of the optional star ratings">
+                <span className="text-amber-500">★</span>{' '}
+                <span className="font-medium text-text">{s.rating.average.toFixed(1)}</span> average from {s.rating.count}{' '}
+                {s.rating.count === 1 ? 'rating' : 'ratings'}
+              </span>
+            )}
+          </div>
           <Breakdown
             total={s.total}
             rows={[
-              { label: 'Bug', value: s.byType.bug },
-              { label: 'Idea', value: s.byType.idea },
-              { label: 'Other', value: s.byType.other },
+              { label: 'Bug', value: s.byType.bug, href: listHref({ type: 'bug' }) },
+              { label: 'Idea', value: s.byType.idea, href: listHref({ type: 'idea' }) },
+              {
+                label: 'Praise',
+                value: s.byType.praise,
+                note: s.testimonials > 0 ? `${s.testimonials} testimonial${s.testimonials === 1 ? '' : 's'}` : undefined,
+                href: listHref({ type: 'praise' }),
+              },
+              { label: 'Other', value: s.byType.other, href: listHref({ type: 'other' }) },
             ]}
           />
         </Card>

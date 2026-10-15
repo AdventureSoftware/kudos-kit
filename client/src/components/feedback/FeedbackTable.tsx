@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Badge, Card, EmptyState, Pagination, SortableTh, Table, Td, Th, Tr, typeTone } from '@/components/ui';
+import { Badge, Card, EmptyState, Pagination, SortableTh, Stars, Table, Td, Th, Tr, typeTone } from '@/components/ui';
 import { cn } from '@/lib/cn';
 import { feedbackHref, isFiltered, type FeedbackQuery, type SortField } from '@/lib/feedback-query';
 import { DeleteButton, StatusButton } from './FeedbackActions';
@@ -61,7 +61,9 @@ export function FeedbackTable({ data, query, canDelete }: FeedbackTableProps) {
             <Tr key={row.id} className={cn(row.id === query.item && 'bg-accent-soft/60')}>
               <Td className="whitespace-nowrap font-mono text-xs text-muted">{row.ref}</Td>
               <Td className="whitespace-nowrap">{row.project}</Td>
-              <Td><Badge tone={typeTone[row.type] ?? 'neutral'}>{row.type}</Badge></Td>
+              <Td>
+                <Badge tone={typeTone[row.type] ?? 'neutral'}>{row.type}</Badge>
+              </Td>
               <Td className="max-w-0">
                 <Link
                   href={feedbackHref(query, { item: row.id })}
@@ -71,7 +73,15 @@ export function FeedbackTable({ data, query, canDelete }: FeedbackTableProps) {
                 >
                   {row.message}
                 </Link>
-                {row.email && <p className="truncate text-xs text-muted">{row.email}</p>}
+                <p className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-0.5 overflow-hidden text-xs text-muted">
+                  {row.rating && <Stars value={row.rating} />}
+                  {row.testimonial_ok && (
+                    <span className="whitespace-nowrap font-medium text-success" title="The sender agreed this may be shown publicly">
+                      ★ Testimonial<span className="hidden xl:inline"> OK</span>
+                    </span>
+                  )}
+                  {row.email && <span className="min-w-0 max-w-full truncate">{row.email}</span>}
+                </p>
               </Td>
               <Td><StatusButton id={row.id} status={row.status} /></Td>
               <Td className="whitespace-nowrap text-muted">{dateFmt.format(new Date(row.created_at))}</Td>

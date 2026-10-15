@@ -1,10 +1,10 @@
-// widget/src/index.ts
+
 import { FeedbackConfig, FeedbackPayload, FeedbackTheme } from './types';
 import { ConsoleCapture } from './console-capture';
 import { mergeTheme } from './theme';
 import { FeedbackUI } from './ui';
 
-// Captured at load time — document.currentScript is only set while this file is executing.
+
 const SCRIPT_ORIGIN: string | null = (() => {
   const src = (document.currentScript as HTMLScriptElement | null)?.src;
   try { return src ? new URL(src).origin : null; } catch { return null; }
@@ -50,7 +50,15 @@ function hide(): void {
 
 function toggle(): void { isVisible() ? hide() : show(); }
 
+function removeTurnstile(): void {
+  if (turnstileWidgetId !== null) {
+    try { (window as any).turnstile?.remove(turnstileWidgetId); } catch { /* already gone */ }
+    turnstileWidgetId = null;
+  }
+}
+
 function destroy(): void {
+  removeTurnstile();
   ui?.destroy(); ui = null;
   capture?.restore(); capture = null;
   config = null; listeners = {}; ingestUrl = null;
@@ -65,10 +73,13 @@ function setTheme(theme: FeedbackTheme): void {
 
 async function submitFeedback(): Promise<void> {
   if (!ui || !config || !ingestUrl) return;
+  const type = ui.getSelectedType();
+  if (!type) return; // still on the first step
   const message = ui.getMessage();
   if (!message) { ui.showMessage('Please enter a message.', true); return; }
 
   ui.setSubmitState(true);
+  ui.showMessage('');
 
   let turnstileToken = '';
   try {
@@ -76,11 +87,7 @@ async function submitFeedback(): Promise<void> {
       const container = ui!.getTurnstileContainer();
       if (!container) return reject(new Error('No Turnstile container'));
       if (!(window as any).turnstile) return reject(new Error('Turnstile not loaded'));
-      // Clean up any previous widget before rendering a new one
-      if (turnstileWidgetId !== null) {
-        (window as any).turnstile.remove(turnstileWidgetId);
-        turnstileWidgetId = null;
-      }
+      removeTurnstile(); // a token can be used only once
       turnstileWidgetId = (window as any).turnstile.render(container, {
         sitekey: config!.turnstileSiteKey,
         theme: ui!.getThemeMode(),
@@ -97,7 +104,8 @@ async function submitFeedback(): Promise<void> {
     return;
   }
 
-  const type = ui.getSelectedType();
+  const testimonial = ui.getTestimonial();
+  const rating = ui.getRating();
   const payload: FeedbackPayload = {
     project: config.project,
     type,
@@ -113,12 +121,13 @@ async function submitFeedback(): Promise<void> {
       build: (window as any).__APP_VERSION__,
       ts: new Date().toISOString(),
     },
+    ...(rating ? { rating } : {}),
+    ...(testimonial.ok ? { testimonialOk: true, testimonialName: testimonial.name || undefined } : {}),
     hp: ui.getHoneypot(),
     turnstileToken,
   };
 
-  const consoleCfg = config.console;
-  if (capture && consoleCfg?.sendOn.includes(type as 'bug' | 'idea' | 'other')) {
+  if (capture && config.console?.sendOn.includes(type)) {
     payload.console = capture.getLogs();
     payload.errors = capture.getErrors();
   }
@@ -130,9 +139,11 @@ async function submitFeedback(): Promise<void> {
       body: JSON.stringify(payload),
     });
     if (!res.ok) throw new Error(`${res.status}`);
-    ui.showMessage('Thanks for your feedback!');
-    ui.setSubmitState(false);
+    removeTurnstile();
     capture?.clear();
+    ui.setSubmitState(false);
+    ui.showDone();
+    emit('submit', { type });
   } catch {
     ui.showMessage('Failed to send. Please try again.', true);
     ui.setSubmitState(false);
@@ -165,7 +176,7 @@ export function init(cfg: FeedbackConfig): void {
   if (cfg.startHidden) hide();
 
   // Load Turnstile script if not already present
-  if (!(window as any).turnstile) {
+  if (!(window as any).turnstile && !document.querySelector('script[src*="challenges.cloudflare.com/turnstile"]')) {
     const script = document.createElement('script');
     script.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js';
     script.async = true;

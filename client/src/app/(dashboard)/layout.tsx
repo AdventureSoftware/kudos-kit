@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation';
 import { getMemberRole, getSessionUser, needsSetup } from '@/lib/auth';
-import { AppHeader } from '@/components/AppHeader';
+import { AppShell } from '@/components/nav/AppShell';
 import { AuthCard } from '@/components/auth/AuthCard';
 import { SignOutButton } from '@/components/auth/SignOutButton';
 
@@ -22,10 +22,5 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     );
   }
 
-  return (
-    <div className="flex min-h-full flex-1 flex-col">
-      <AppHeader user={user} />
-      <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-6 sm:px-6">{children}</main>
-    </div>
-  );
+  return <AppShell user={user}>{children}</AppShell>;
 }

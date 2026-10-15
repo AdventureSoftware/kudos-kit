@@ -13,15 +13,25 @@ export interface SessionUser {
 }
 
 
-async function cookieHeader(): Promise<string> {
-  return (await headers()).get('cookie') ?? '';
+/**
+ * Headers passed on from the visitor's request to the API:
+ * - cookie: the login
+ * - x-forwarded-for: the visitor's IP, so Better Auth rate-limits each person separately
+ *   instead of putting every server-side call in one shared bucket. nginx/Caddy set this
+ *   header to exactly the visitor's address (a visitor can't fake it); in development
+ *   Next.js sets it from the connection.
+ */
+async function forwardedHeaders(): Promise<{ cookie: string; ip: string }> {
+  const h = await headers();
+  return { cookie: h.get('cookie') ?? '', ip: h.get('x-forwarded-for') ?? '' };
 }
 
 
 export async function apiFetch(path: string, init: RequestInit = {}): Promise<Response> {
   const h = new Headers(init.headers);
-  const cookie = await cookieHeader();
+  const { cookie, ip } = await forwardedHeaders();
   if (cookie) h.set('cookie', cookie);
+  if (ip) h.set('x-forwarded-for', ip);
   return fetch(`${API_URL}${path}`, { ...init, headers: h, cache: 'no-store' });
 }
 

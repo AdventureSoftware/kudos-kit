@@ -1,8 +1,9 @@
 import Link from 'next/link';
-import { Badge, buttonClass, typeTone, type Tone } from '@/components/ui';
+import { Badge, buttonClass, Stars, typeTone, type Tone } from '@/components/ui';
 import { cn } from '@/lib/cn';
 import { CloseOnEscape } from './CloseOnEscape';
-import { DeleteButton, StatusButton } from './FeedbackActions';
+import { DeleteButton, StatusButton, WithdrawTestimonialButton } from './FeedbackActions';
+import { CopyQuoteButton } from './CopyQuoteButton';
 
 export interface ConsoleEntry { t: number; level: string; msg: string }
 export interface ErrorEntry { message: string; stack?: string; filename?: string; lineno?: number }
@@ -28,6 +29,10 @@ export interface FeedbackDetail {
   console_logs: ConsoleEntry[] | null;
   errors: ErrorEntry[] | null;
   status: string;
+  testimonial_ok: boolean;
+  testimonial_name: string | null;
+  testimonial_at: string | null;
+  rating: number | null;
   created_at: string;
 }
 
@@ -102,8 +107,16 @@ function Detail({ item, closeHref, canDelete }: { item: FeedbackDetail; closeHre
 
       <div className="flex-1 space-y-6 overflow-y-auto px-6 py-5">
         <Section title="Message">
+          {item.rating && (
+            <p className="mb-2 flex items-center gap-2 text-base">
+              <Stars value={item.rating} />
+              <span className="text-xs text-muted">{item.rating} of 5</span>
+            </p>
+          )}
           <p className="whitespace-pre-wrap break-words leading-relaxed">{item.message}</p>
         </Section>
+
+        {item.type === 'praise' && <TestimonialSection item={item} canManage={canDelete} />}
 
         <Section title="Reporter">
           <dl className="grid grid-cols-[8rem_1fr] gap-x-4 gap-y-2">
@@ -128,7 +141,9 @@ function Detail({ item, closeHref, canDelete }: { item: FeedbackDetail; closeHre
               {ctx.build && <Row label="App build"><span className="font-mono text-xs">{ctx.build}</span></Row>}
             </dl>
           ) : (
-            <p className="text-muted">No context captured.</p>
+            <p className="text-muted">
+              {item.testimonial_ok ? 'Technical details are removed from testimonials after the retention period.' : 'No context captured.'}
+            </p>
           )}
         </Section>
 
@@ -165,6 +180,31 @@ function Detail({ item, closeHref, canDelete }: { item: FeedbackDetail; closeHre
         </Section>
       </div>
     </>
+  );
+}
+
+/** Praise only: whether the sender agreed it may be shown publicly, and as whom. */
+function TestimonialSection({ item, canManage }: { item: FeedbackDetail; canManage: boolean }) {
+  return (
+    <Section title="Testimonial">
+      {item.testimonial_ok ? (
+        <div className="rounded-ui border border-success/30 bg-success-soft px-4 py-3">
+          <p className="font-medium text-success">★ May be shown publicly</p>
+          <dl className="mt-2 grid grid-cols-[8rem_1fr] gap-x-4 gap-y-1">
+            <Row label="Show as">{item.testimonial_name ?? <span className="text-muted">Anonymous</span>}</Row>
+            {item.testimonial_at && <Row label="Consent given">{fullDate.format(new Date(item.testimonial_at))}</Row>}
+          </dl>
+          <div className="mt-3 flex flex-wrap items-center gap-2">
+            <CopyQuoteButton message={item.message} name={item.testimonial_name} rating={item.rating} />
+            {canManage && <WithdrawTestimonialButton id={item.id} label={item.ref} />}
+          </div>
+        </div>
+      ) : (
+        <p className="text-muted">
+          Not for public use{item.testimonial_at ? ': the sender withdrew consent.' : '. The sender didn’t tick the testimonial box.'}
+        </p>
+      )}
+    </Section>
   );
 }
 

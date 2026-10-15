@@ -4,7 +4,11 @@ import { PrismaAdminService } from '../prisma/prisma-admin.service';
 export interface StatsResponse {
   total: number;
   byStatus: Record<'new' | 'triaged' | 'done', number>;
-  byType: Record<'bug' | 'idea' | 'other', number>;
+  byType: Record<'bug' | 'idea' | 'praise' | 'other', number>;
+  /** Praise whose sender agreed it may be used as a testimonial. */
+  testimonials: number;
+  /** Average of the optional 1–5 star ratings (null when there are none) and how many there are. */
+  rating: { average: number | null; count: number };
   byProject: Array<{ project: string; total: number; new: number }>;
   last7: number;
   prev7: number;
@@ -24,13 +28,15 @@ export class AdminStatsService {
     const since7 = new Date(now - 7 * day);
     const since14 = new Date(now - 14 * day);
 
-    const [total, statusGroups, typeGroups, projectGroups, last7, prev7, daily] = await Promise.all([
+    const [total, statusGroups, typeGroups, projectGroups, last7, prev7, testimonials, ratingAgg, daily] = await Promise.all([
       this.prisma.feedback.count({ where }),
       this.prisma.feedback.groupBy({ by: ['status'], where, _count: { _all: true } }),
       this.prisma.feedback.groupBy({ by: ['type'], where, _count: { _all: true } }),
       this.prisma.feedback.groupBy({ by: ['project', 'status'], where, _count: { _all: true } }),
       this.prisma.feedback.count({ where: { ...where, created_at: { gte: since7 } } }),
       this.prisma.feedback.count({ where: { ...where, created_at: { gte: since14, lt: since7 } } }),
+      this.prisma.feedback.count({ where: { ...where, testimonial_ok: true } }),
+      this.prisma.feedback.aggregate({ where: { ...where, rating: { not: null } }, _avg: { rating: true }, _count: { rating: true } }),
       this.dailyCounts(project),
     ]);
 
@@ -39,7 +45,7 @@ export class AdminStatsService {
       if (g.status in byStatus) byStatus[g.status as keyof typeof byStatus] = g._count._all;
     }
 
-    const byType = { bug: 0, idea: 0, other: 0 };
+    const byType = { bug: 0, idea: 0, praise: 0, other: 0 };
     for (const g of typeGroups) {
       if (g.type in byType) byType[g.type as keyof typeof byType] = g._count._all;
     }
@@ -56,6 +62,11 @@ export class AdminStatsService {
       total,
       byStatus,
       byType,
+      testimonials,
+      rating: {
+        average: ratingAgg._avg.rating === null ? null : Math.round(ratingAgg._avg.rating * 10) / 10,
+        count: ratingAgg._count.rating,
+      },
       byProject: [...projects.values()].sort((a, b) => b.total - a.total),
       last7,
       prev7,
