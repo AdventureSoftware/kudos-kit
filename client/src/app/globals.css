@@ -2,34 +2,37 @@
 
 
 :root {
-  /* Brand color (Berry): logo, favicon, app icon, avatar. Same in light and dark on purpose. */
-  --brand: #be185d;
+  /* Brand color (Coral): logo, favicon, app icon, avatar. Same in light and dark on purpose. */
+  --brand: #c2410c;
 
-  /* Neutral greys. The page is a step darker than the white cards so they stand out,
-     and borders are strong enough to frame them. Berry is kept for accents and table headers. */
-  --bg: #f4f4f6;
+  /* Warm neutral greys. The page is a step darker than the white cards so they stand out,
+     and borders are strong enough to frame them. Coral is kept for accents and table headers. */
+  --bg: #f5f5f4;
   --surface: #ffffff;
-  --surface-muted: #f0f0f3;
-  --border: #e0e0e6;
-  --text: #18181b;
-  --text-muted: #62626c;
-  --card-shadow: 0 1px 2px rgb(24 24 27 / 0.05), 0 2px 8px rgb(24 24 27 / 0.04);
+  --surface-muted: #f1f0ee;
+  --border: #e2e0dd;
+  --text: #1c1917;
+  --text-muted: #64605c;
+  --card-shadow: 0 1px 2px rgb(28 25 23 / 0.05), 0 2px 8px rgb(28 25 23 / 0.04);
 
-  /* Table headers: berry tint. */
-  --table-head-bg: #fbe3ee;
-  --table-head-text: #9d174d;
-  --table-head-border: #f3c5da;
+  /* Table headers: coral tint. */
+  --table-head-bg: #ffedd5;
+  --table-head-text: #9a3412;
+  --table-head-border: #fed7aa;
 
-  --accent: #be185d;
-  --accent-hover: #9d174d;
-  --accent-soft: #fdf2f8;
+  --accent: #c2410c;
+  --accent-hover: #9a3412;
+  --accent-soft: #fff7ed;
   --accent-contrast: #ffffff;
 
+  /* Status colors, chosen to stay clearly apart from coral. */
+  --info: #0369a1;
+  --info-soft: #f0f9ff;
   --danger: #dc2626;
   --danger-contrast: #ffffff;
   --danger-soft: #fef2f2;
-  --warning: #b45309;
-  --warning-soft: #fffbeb;
+  --warning: #a16207;
+  --warning-soft: #fefce8;
   --success: #15803d;
   --success-soft: #f0fdf4;
 
@@ -38,28 +41,30 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg: #0e0b0d;
-    --surface: #191417;
-    --surface-muted: #241c21;
-    --border: #352a30;
-    --text: #efeaed;
-    --text-muted: #b0a3aa;
+    --bg: #0c0a09;
+    --surface: #1a1715;
+    --surface-muted: #24201d;
+    --border: #36302b;
+    --text: #f0ebe7;
+    --text-muted: #ada39b;
     --card-shadow: none;
 
-    --table-head-bg: #241c21;
-    --table-head-text: #d3abbf;
-    --table-head-border: #352a30;
+    --table-head-bg: #2a1d15;
+    --table-head-text: #fdba74;
+    --table-head-border: #3d2a1d;
 
-    --accent: #f472b6;
-    --accent-hover: #f9a8d4;
-    --accent-soft: #500724;
-    --accent-contrast: #0c0c0e;
+    --accent: #fb923c;
+    --accent-hover: #fdba74;
+    --accent-soft: #431407;
+    --accent-contrast: #0c0a09;
 
+    --info: #7dd3fc;
+    --info-soft: #0c2a3d;
     --danger: #f87171;
-    --danger-contrast: #0c0c0e;
+    --danger-contrast: #0c0a09;
     --danger-soft: #2a1215;
-    --warning: #fbbf24;
-    --warning-soft: #2a2010;
+    --warning: #facc15;
+    --warning-soft: #2a240a;
     --success: #4ade80;
     --success-soft: #0f2417;
   }
@@ -81,6 +86,8 @@
   --color-accent-hover: var(--accent-hover);
   --color-accent-soft: var(--accent-soft);
   --color-accent-contrast: var(--accent-contrast);
+  --color-info: var(--info);
+  --color-info-soft: var(--info-soft);
   --color-danger: var(--danger);
   --color-danger-contrast: var(--danger-contrast);
   --color-danger-soft: var(--danger-soft);

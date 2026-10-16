@@ -8,7 +8,20 @@
    1–5 stars ("How would you rate Colorpage?", using `appName`; never shown for bugs). Praise
    also shows an optional "You may show my message publicly as a testimonial" box with an
    optional name.
-3. **Thank you**, with "Send more feedback". Closing the panel after sending starts fresh.
+   With 4 or 5 stars on Praise, the testimonial box is highlighted ("Glad you like it! May we
+   share your words?") and pulses twice, so happy users don't miss it. It is never ticked for
+   them. With reduced motion turned on in the OS, it is highlighted without the pulse.
+3. **Thank you**, with "Send more feedback".
+
+Closing and reopening the panel:
+
+| Closed… | Reopens at |
+|---|---|
+| after sending | the first step, empty |
+| after only picking a type (nothing typed, no stars, box not ticked) | the first step |
+| with anything typed or chosen | the same form, so a draft is never lost by accident |
+
+Reloading the page always starts fresh (nothing is stored in the browser).
 
 Console logs are sent only for the types listed in `console.sendOn` (default `['bug']`).
 

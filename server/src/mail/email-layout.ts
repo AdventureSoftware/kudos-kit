@@ -1,5 +1,5 @@
 
-export const BRAND = '#be185d';
+export const BRAND = '#c2410c';
 
 export const escapeHtml = (s: string) =>
   s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]!);
