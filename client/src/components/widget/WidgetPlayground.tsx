@@ -23,15 +23,12 @@ interface WidgetPlaygroundProps {
   turnstileSiteKey: string;
 }
 
-/**
- * Loads the real widget (/kkw.js) on this page, lets you change how it looks, and shows
- * the snippet to paste into a site. Reports sent from here land in the inbox like real ones.
- */
+
 export function WidgetPlayground({ projects, turnstileSiteKey }: WidgetPlaygroundProps) {
   const [settings, setSettings] = useState<WidgetSettings>({
     project: projects[0]?.key ?? '',
     mode: 'auto',
-    accent: '#be185d',
+    accent: '#c2410c',
     radius: 8,
     position: 'bottom-right',
   });
@@ -42,7 +39,7 @@ export function WidgetPlayground({ projects, turnstileSiteKey }: WidgetPlaygroun
   const started = useRef<string | null>(null);
   const set = (patch: Partial<WidgetSettings>) => setSettings((s) => ({ ...s, ...patch }));
 
-  // Load the widget script once.
+
   useEffect(() => {
     setOrigin(window.location.origin);
     if (window.Feedback) return setReady(true);
@@ -52,7 +49,7 @@ export function WidgetPlayground({ projects, turnstileSiteKey }: WidgetPlaygroun
     document.body.appendChild(script);
   }, []);
 
-  // Project and position need a fresh start; colors are applied live (below).
+
   const restartKey = `${settings.project}|${settings.position}`;
   useEffect(() => {
     const feedback = window.Feedback;

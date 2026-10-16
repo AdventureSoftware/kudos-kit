@@ -1,10 +1,11 @@
 import { cn } from '@/lib/cn';
 
-export type Tone = 'neutral' | 'accent' | 'danger' | 'warning' | 'success';
+export type Tone = 'neutral' | 'accent' | 'info' | 'danger' | 'warning' | 'success';
 
 const tones: Record<Tone, string> = {
   neutral: 'bg-surface-muted text-muted',
   accent: 'bg-accent-soft text-accent',
+  info: 'bg-info-soft text-info',
   danger: 'bg-danger-soft text-danger',
   warning: 'bg-warning-soft text-warning',
   success: 'bg-success-soft text-success',
@@ -23,8 +24,7 @@ export function Badge({ tone = 'neutral', children, className, title }: {
   );
 }
 
-/** Feedback type → color. */
-export const typeTone: Record<string, Tone> = { bug: 'danger', idea: 'accent', praise: 'success', other: 'neutral' };
 
-/** Feedback status → color. */
+export const typeTone: Record<string, Tone> = { bug: 'danger', idea: 'info', praise: 'success', other: 'neutral' };
+
 export const statusTone: Record<string, Tone> = { new: 'accent', triaged: 'warning', done: 'success' };

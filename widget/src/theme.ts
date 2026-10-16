@@ -110,12 +110,14 @@ export function buildCss(config: FeedbackConfig): string {
          without color-mix() fall back to the plain field background. */
       --kkw-tint: var(--kkw-field-bg);
       --kkw-tint-strong: var(--kkw-border);
+      --kkw-ring: var(--kkw-accent);
       ${light}
     }
     @supports (background: color-mix(in srgb, red 50%, blue)) {
       :where(.kkw-root) {
         --kkw-tint: color-mix(in srgb, var(--kkw-accent) 8%, var(--kkw-bg));
         --kkw-tint-strong: color-mix(in srgb, var(--kkw-accent) 16%, var(--kkw-bg));
+        --kkw-ring: color-mix(in srgb, var(--kkw-accent) 45%, transparent);
       }
     }
     :where(.kkw-root[data-kkw-mode="dark"]) { ${dark} }
@@ -216,8 +218,19 @@ export function buildCss(config: FeedbackConfig): string {
     .kkw-textarea::placeholder, .kkw-input::placeholder { color: var(--kkw-muted); opacity: 1; }
     .kkw-textarea:focus, .kkw-input:focus { outline: none; border-color: var(--kkw-accent); }
     .kkw-consent {
-      display: flex; gap: 8px; align-items: flex-start; margin: 0 0 12px; cursor: pointer;
-      font-size: 12px; color: var(--kkw-text);
+      display: flex; gap: 8px; align-items: flex-start; margin: 0 -8px 12px; padding: 8px;
+      cursor: pointer; font-size: 12px; color: var(--kkw-text);
+      border-radius: var(--kkw-radius-sm); transition: background-color 200ms ease;
+    }
+    .kkw-consent-lead { display: none; margin-bottom: 2px; font-size: 13px; font-weight: 600; color: var(--kkw-accent); }
+    /* Happy user (Praise, 4–5 stars, not ticked yet): tint + friendly line, and a short pulse. */
+    .kkw-consent.kkw-consent-hi { background: var(--kkw-tint); }
+    .kkw-consent.kkw-consent-hi .kkw-consent-lead { display: block; }
+    .kkw-consent.kkw-pulse { animation: kkw-pulse 1.1s ease-out 2; }
+    @keyframes kkw-pulse {
+      0% { box-shadow: 0 0 0 0 var(--kkw-ring); }
+      70% { box-shadow: 0 0 0 8px transparent; }
+      100% { box-shadow: 0 0 0 0 transparent; }
     }
     .kkw-consent input { flex-shrink: 0; width: 15px; height: 15px; margin: 1px 0 0; accent-color: var(--kkw-accent); cursor: pointer; }
     .kkw-consent small { display: block; margin-top: 2px; font-size: 11px; color: var(--kkw-muted); }
@@ -259,6 +272,9 @@ export function buildCss(config: FeedbackConfig): string {
     .kkw-brand:focus-visible {
       outline: 2px solid var(--kkw-accent); outline-offset: 2px;
     }
-    @media (prefers-reduced-motion: reduce) { .kkw-type, .kkw-type-icon, .kkw-star-icon { transition: none; } }
+    @media (prefers-reduced-motion: reduce) {
+      .kkw-type, .kkw-type-icon, .kkw-star-icon, .kkw-consent { transition: none; }
+      .kkw-consent.kkw-pulse { animation: none; }
+    }
   `;
 }

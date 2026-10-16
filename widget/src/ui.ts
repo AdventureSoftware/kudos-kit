@@ -55,7 +55,6 @@ const BRAND_URL = 'https://kudoskit.io';
 const svg = (inner: string, cls: string) =>
   `<svg class="${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">${inner}</svg>`;
 
-
 function el<K extends keyof HTMLElementTagNameMap>(tag: K, className?: string, text?: string): HTMLElementTagNameMap[K] {
   const node = document.createElement(tag);
   if (className) node.className = className;
@@ -195,23 +194,24 @@ export class FeedbackUI {
       label.title = `${value} of 5`;
       label.innerHTML = svg('<path d="M12 2.8l2.8 5.7 6.3.9-4.6 4.4 1.1 6.2L12 17.1 6.4 20l1.1-6.2-4.6-4.4 6.3-.9z"/>', 'kkw-star-icon');
       label.appendChild(el('span', 'kkw-sr', `${value} star${value === 1 ? '' : 's'}`));
-      // A second click on the chosen star clears the rating.
+
       label.addEventListener('mousedown', () => { label.dataset.wasChecked = String(input.checked); });
       label.addEventListener('click', (e) => {
-        if (label.dataset.wasChecked === 'true') { e.preventDefault(); input.checked = false; }
+        if (label.dataset.wasChecked === 'true') { e.preventDefault(); input.checked = false; this.updateConsentNudge(); }
         delete label.dataset.wasChecked;
       });
+      input.addEventListener('change', () => this.updateConsentNudge());
       stars.append(input, label);
       ratingInputs.push(input);
     }
-    // Arrow keys follow what you see (right = more stars), not the reversed DOM order.
+
     stars.addEventListener('keydown', (e) => {
       const step = e.key === 'ArrowRight' || e.key === 'ArrowUp' ? 1 : e.key === 'ArrowLeft' || e.key === 'ArrowDown' ? -1 : 0;
       if (!step) return;
       e.preventDefault();
       const current = Number(ratingInputs.find((i) => i.checked)?.value ?? 0);
       const next = ratingInputs.find((i) => Number(i.value) === Math.min(5, Math.max(1, current + step)));
-      if (next) { next.checked = true; next.focus(); }
+      if (next) { next.checked = true; next.focus(); this.updateConsentNudge(); }
     });
     ratingBox.append(legend, stars);
 
@@ -233,12 +233,18 @@ export class FeedbackUI {
     email.placeholder = 'you@example.com';
 
     // Praise only: consent to use the message as a testimonial, then an optional name.
+    // Never ticked for the user. With 4–5 stars it gets a tint, a friendly line and a short pulse.
     const consentBox = el('label', 'kkw-consent');
     const consent = el('input');
     consent.type = 'checkbox';
-    const consentText = el('span', undefined, 'You may show my message publicly as a testimonial.');
-    consentText.appendChild(el('small', undefined, 'Optional. You can withdraw this at any time.'));
+    const consentText = el('span');
+    consentText.append(
+      el('strong', 'kkw-consent-lead', 'Glad you like it! May we share your words?'),
+      document.createTextNode('You may show my message publicly as a testimonial.'),
+      el('small', undefined, 'Optional. You can withdraw this at any time.'),
+    );
     consentBox.append(consent, consentText);
+    consentBox.addEventListener('animationend', () => consentBox.classList.remove('kkw-pulse'));
 
     const nameBox = el('div', 'kkw-hidden');
     const nameId = uid('name');
@@ -254,6 +260,7 @@ export class FeedbackUI {
     consent.onchange = () => {
       nameBox.classList.toggle('kkw-hidden', !consent.checked);
       if (consent.checked) name.focus();
+      this.updateConsentNudge();
     };
 
     const hp = el('input', 'kkw-hp');
@@ -304,7 +311,6 @@ export class FeedbackUI {
     return view;
   }
 
-
   private buildBranding(): HTMLElement {
     const link = el('a', 'kkw-brand');
     link.href = BRAND_URL;
@@ -316,7 +322,6 @@ export class FeedbackUI {
   }
 
 
-
   private showStep(step: Step): void {
     this.step = step;
     for (const [name, view] of Object.entries(this.views)) view.classList.toggle('kkw-hidden', name !== step);
@@ -326,6 +331,30 @@ export class FeedbackUI {
     this.panel?.querySelectorAll<HTMLElement>('.kkw-type').forEach((btn) => {
       btn.setAttribute('aria-pressed', String(btn.dataset.type === kind));
     });
+  }
+
+
+  private updateConsentNudge(): void {
+    const box = this.refs.consentBox;
+    if (!box) return;
+    const happy = this.kind === 'praise' && (this.getRating() ?? 0) >= 4 && !this.refs.consent.checked;
+    const was = box.classList.contains('kkw-consent-hi');
+    box.classList.toggle('kkw-consent-hi', happy);
+    if (happy && !was) {
+      box.classList.remove('kkw-pulse');
+      void box.offsetWidth; // restart the animation
+      box.classList.add('kkw-pulse');
+    }
+    if (!happy) box.classList.remove('kkw-pulse');
+  }
+
+
+  private hasDraft(): boolean {
+    const r = this.refs;
+    return Boolean(
+      r.textarea.value.trim() || r.email.value.trim() || r.name.value.trim() ||
+      r.consent.checked || r.ratingInputs.some((i) => i.checked),
+    );
   }
 
   private choose(kind: FeedbackKind): void {
@@ -343,6 +372,7 @@ export class FeedbackUI {
     r.privacy.classList.toggle('kkw-hidden', kind !== 'bug' && !this.config.privacyUrl);
     this.showMessage('');
     this.showStep('write');
+    this.updateConsentNudge();
     r.textarea.focus();
   }
 
@@ -359,7 +389,6 @@ export class FeedbackUI {
     this.panel?.querySelector<HTMLElement>('.kkw-link-btn')?.focus();
   }
 
-
   reset(): void {
     const r = this.refs;
     r.textarea.value = '';
@@ -368,6 +397,7 @@ export class FeedbackUI {
     r.ratingInputs.forEach((i) => { i.checked = false; });
     r.name.value = '';
     r.nameBox.classList.add('kkw-hidden');
+    r.consentBox.classList.remove('kkw-consent-hi', 'kkw-pulse');
     r.hp.value = '';
     this.kind = null;
     this.markChosen(null);
@@ -376,6 +406,7 @@ export class FeedbackUI {
     this.showStep('choose');
     this.panel?.querySelector<HTMLElement>('.kkw-type')?.focus();
   }
+
 
   getSelectedType(): FeedbackKind | null { return this.kind; }
 
@@ -391,6 +422,7 @@ export class FeedbackUI {
     const checked = this.refs.ratingInputs.find((i) => i.checked);
     return checked ? Number(checked.value) : null;
   }
+
 
   getTestimonial(): { ok: boolean; name: string } {
     const ok = this.kind === 'praise' && this.refs.consent.checked;
@@ -413,7 +445,7 @@ export class FeedbackUI {
 
   getSubmitButton(): HTMLButtonElement | null { return this.refs.submit ?? null; }
 
-
+  // ---------------------------------------------------------------- visibility
 
   togglePanel(): void { this.visible ? this.hidePanel() : this.showPanel(); }
 
@@ -430,10 +462,19 @@ export class FeedbackUI {
       this.panel.style.display = 'none';
       this.visible = false;
       this.button?.setAttribute('aria-expanded', 'false');
-      if (this.step === 'done') this.reset(); // next time starts fresh
+      // Next time: fresh after sending, or when nothing was entered yet (just a type picked).
+      // Anything typed or chosen is kept as a draft, so an accidental close loses nothing.
+      if (this.step === 'done') this.reset();
+      else if (this.step === 'write' && !this.hasDraft()) {
+        this.kind = null;
+        this.markChosen(null);
+        this.showMessage('');
+        this.showStep('choose');
+      }
     }
   }
 
+  /** Merge new theme values and re-apply styles without remounting. */
   setTheme(theme: FeedbackTheme): void {
     this.config = { ...this.config, theme: mergeTheme(this.config.theme, theme) };
     if (this.styleEl) this.styleEl.textContent = buildCss(this.config);
