@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Button, Card, Label, MenuSelect } from '@/components/ui';
 import { installSnippet, widgetConfig } from './snippet';
@@ -82,7 +83,13 @@ export function WidgetPlayground({ projects, turnstileSiteKey }: WidgetPlaygroun
     return (
       <Card className="p-5">
         <p className="font-medium">No active projects yet.</p>
-        <p className="mt-1 text-muted">Add one to the projects table (see db/seed.sql), then come back here.</p>
+        <p className="mt-1 text-muted">
+          Add one on the{' '}
+          <Link href="/projects" className="font-semibold text-accent underline underline-offset-2 hover:text-accent-hover">
+            Projects page
+          </Link>{' '}
+          (owners and admins), or turn an existing one on, then come back here.
+        </p>
       </Card>
     );
   }

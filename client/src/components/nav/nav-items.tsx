@@ -33,6 +33,12 @@ export const NAV_ITEMS: NavItem[] = [
     icon: icon(<><circle cx="9" cy="8" r="3.5" /><path d="M2.5 20a6.5 6.5 0 0 1 13 0" /><path d="M16 4.6a3.5 3.5 0 0 1 0 6.8" /><path d="M18.5 14.5A6.5 6.5 0 0 1 21.5 20" /></>),
   },
   {
+    href: '/projects',
+    label: 'Projects',
+    exact: false,
+    icon: icon(<><path d="M3 7.5A1.5 1.5 0 0 1 4.5 6H9l2 2h8.5A1.5 1.5 0 0 1 21 9.5v8a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 17.5z" /><path d="M3 11h18" /></>),
+  },
+  {
     href: '/widget',
     label: 'Widget',
     exact: false,

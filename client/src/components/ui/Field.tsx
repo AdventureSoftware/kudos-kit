@@ -1,8 +1,9 @@
 import { cn } from '@/lib/cn';
 
+// Placeholders are lighter than real text (and than labels), so an example never looks like a value.
 const control =
   'h-9 rounded-ui border border-border bg-surface px-3 text-sm text-text ' +
-  'placeholder:text-muted focus:border-accent focus:outline-none';
+  'placeholder:text-muted/50 focus:border-accent focus:outline-none';
 
 export function Input({ className, ...rest }: React.InputHTMLAttributes<HTMLInputElement>) {
   return <input className={cn(control, 'w-full', className)} {...rest} />;
