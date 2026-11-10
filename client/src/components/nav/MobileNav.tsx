@@ -28,7 +28,7 @@ export function MobileTopBar({ user }: { user: SessionUser }) {
   );
 }
 
-/** Phones only: the four pages as tabs fixed to the bottom of the screen. */
+/** Phones only: the dashboard pages as tabs fixed to the bottom of the screen (one column each). */
 export function BottomTabs() {
   const pathname = usePathname();
   return (
@@ -36,7 +36,7 @@ export function BottomTabs() {
       aria-label="Main"
       className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-surface/95 pb-[env(safe-area-inset-bottom)] backdrop-blur md:hidden"
     >
-      <ul className="grid grid-cols-4">
+      <ul className="grid" style={{ gridTemplateColumns: `repeat(${NAV_ITEMS.length}, minmax(0, 1fr))` }}>
         {NAV_ITEMS.map((item) => {
           const active = isActive(pathname, item);
           return (
