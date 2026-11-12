@@ -5,7 +5,6 @@ import { ActiveToggle, ProjectName } from './ProjectControls';
 
 const countFmt = new Intl.NumberFormat('en-GB');
 
-/** Every project. Owners and admins can rename and turn projects on or off right in the table. */
 export function ProjectList({ projects, manage }: { projects: Project[]; manage: boolean }) {
   return (
     <Card className="overflow-hidden">

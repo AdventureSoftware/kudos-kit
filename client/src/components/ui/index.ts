@@ -10,3 +10,4 @@ export { ConfirmDialog, type ConfirmDialogProps } from './ConfirmDialog';
 export { MenuSelect, type MenuOption } from './MenuSelect';
 export { FormError } from './FormError';
 export { Stars, starText } from './Stars';
+export { LocalTime } from './LocalTime';

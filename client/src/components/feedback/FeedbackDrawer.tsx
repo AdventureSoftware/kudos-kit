@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Badge, buttonClass, Stars, typeTone, type Tone } from '@/components/ui';
+import { Badge, buttonClass, Stars, typeTone, type Tone , LocalTime} from '@/components/ui';
 import { cn } from '@/lib/cn';
 import { CloseOnEscape } from './CloseOnEscape';
 import { DeleteButton, StatusButton, WithdrawTestimonialButton } from './FeedbackActions';
@@ -36,12 +36,8 @@ export interface FeedbackDetail {
   created_at: string;
 }
 
-const fullDate = new Intl.DateTimeFormat('en-GB', { dateStyle: 'medium', timeStyle: 'short' });
-const clock = new Intl.DateTimeFormat('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit', fractionalSecondDigits: 3 });
-
 const levelTone: Record<string, Tone> = { error: 'danger', warn: 'warning', info: 'accent' };
 
-/** Only http(s) links are clickable; anything else is shown as plain text. */
 function safeUrl(url?: string): string | null {
   if (!url) return null;
   try {
@@ -96,7 +92,7 @@ function Detail({ item, closeHref, canDelete }: { item: FeedbackDetail; closeHre
             <StatusButton id={item.id} status={item.status} />
           </div>
           <h2 id="feedback-detail-title" className="text-base font-semibold">
-            {item.project} · {fullDate.format(new Date(item.created_at))}
+            {item.project} · {<LocalTime value={item.created_at} format="full" />}
           </h2>
         </div>
         <div className="flex shrink-0 items-center gap-1">
@@ -170,9 +166,9 @@ function Detail({ item, closeHref, canDelete }: { item: FeedbackDetail; closeHre
             <ol className="divide-y divide-border rounded-ui border border-border font-mono text-xs">
               {logs.map((l, i) => (
                 <li key={i} className={cn('grid grid-cols-[6.5rem_3.5rem_1fr] items-start gap-3 px-3 py-2', l.level === 'error' && 'bg-danger-soft/40')}>
-                  <span className="tabular-nums text-muted">{clock.format(new Date(l.t))}</span>
+                  <span className="tabular-nums text-muted"><LocalTime value={l.t} format="clock" /></span>
                   <span><Badge tone={levelTone[l.level] ?? 'neutral'}>{l.level}</Badge></span>
-                  <span className="whitespace-pre-wrap break-words">{l.msg}</span>
+                  <span className="whitespace-pre-wrap wrap-break-word">{l.msg}</span>
                 </li>
               ))}
             </ol>
@@ -192,7 +188,7 @@ function TestimonialSection({ item, canManage }: { item: FeedbackDetail; canMana
           <p className="font-medium text-success">★ May be shown publicly</p>
           <dl className="mt-2 grid grid-cols-[8rem_1fr] gap-x-4 gap-y-1">
             <Row label="Show as">{item.testimonial_name ?? <span className="text-muted">Anonymous</span>}</Row>
-            {item.testimonial_at && <Row label="Consent given">{fullDate.format(new Date(item.testimonial_at))}</Row>}
+            {item.testimonial_at && <Row label="Consent given">{<LocalTime value= {item.testimonial_at} format="full" /> } </Row>}
           </dl>
           <div className="mt-3 flex flex-wrap items-center gap-2">
             <CopyQuoteButton message={item.message} name={item.testimonial_name} rating={item.rating} />
