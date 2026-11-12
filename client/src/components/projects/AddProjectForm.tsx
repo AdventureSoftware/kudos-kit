@@ -6,10 +6,7 @@ import { Button, Card, FormError, Input, Label } from '@/components/ui';
 import { addProject } from '@/app/(dashboard)/projects/actions';
 import { KEY_PATTERN, NAME_MAX, PREFIX_PATTERN, suggestKey, suggestPrefix } from '@/lib/projects';
 
-/**
- * Owners and admins add a project. Key and prefix are filled in from the name
- * until someone edits them, and can't be changed once the project exists.
- */
+
 export function AddProjectForm({ takenPrefixes }: { takenPrefixes: string[] }) {
   const [name, setName] = useState('');
   const [key, setKey] = useState('');

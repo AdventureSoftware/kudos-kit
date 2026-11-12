@@ -72,8 +72,6 @@ function colorVars(colors?: ThemeColors): string {
  */
 export function buildCss(config: FeedbackConfig): string {
   const t = config.theme ?? {};
-  // Accent colors only override the palette defaults when the app provides them.
-  // A custom accent without explicit text color gets white text.
   const accentText = t.accentText ?? t.text ?? (t.accent ? '#ffffff' : undefined);
   const accentRule = [
     t.accent ? `--kkw-accent: ${sanitizeCss(t.accent)};` : '',
@@ -81,6 +79,10 @@ export function buildCss(config: FeedbackConfig): string {
   ].join(' ');
   const radius = Number.isFinite(t.radius) ? Math.max(0, Math.min(Number(t.radius), 32)) : 8;
   const font = sanitizeCss(t.fontFamily ?? 'system-ui, -apple-system, sans-serif');
+  // 'inherit' can't be used inside the `font` shorthand: the browser drops the whole rule and
+  // the text falls back to the page's size (often 16px). So the family is set on its own line.
+  const family = font.trim() === 'inherit' ? 'inherit' : 'var(--kkw-font)';
+  const fontRule = (spec: string) => `font: ${spec} system-ui, -apple-system, sans-serif; font-family: ${family};`;
 
   const pos = config.position ?? 'bottom-right';
   const off = config.offset ?? {};
@@ -89,19 +91,15 @@ export function buildCss(config: FeedbackConfig): string {
   const vOff = (vertical === 'bottom' ? off.bottom : off.top) ?? 24;
   const hOff = (horizontal === 'right' ? off.right : off.left) ?? 24;
 
-  // Speech-bubble shapes: the button and the panel are rounder than the inputs, and the
-  // corner pointing at the screen corner where the widget sits stays sharp, like a bubble's tail.
-  // radius 0 keeps everything square.
   const btnRadius = Math.min(24, Math.round(radius * 2.5));
   const panelRadius = Math.min(24, radius * 2);
   const tail = (r: number) => Math.min(4, r);
   const tailCorner = `border-${vertical}-${horizontal}-radius`;
 
-  // Order inside each block: built-in palette → global accent → per-mode overrides.
   const light = `${LIGHT} ${accentRule} ${colorVars(t.light)}`;
   const dark = `${DARK} ${accentRule} ${colorVars(t.dark)}`;
 
-  return `
+  const css = `
     :where(.kkw-root) {
       --kkw-radius: ${radius}px;
       --kkw-radius-sm: ${Math.round(radius / 2)}px;
@@ -184,6 +182,18 @@ export function buildCss(config: FeedbackConfig): string {
     /* Step 2: the form */
     .kkw-head { display: flex; align-items: center; gap: 4px; }
     .kkw-head.kkw-band { padding: 12px 20px 12px 12px; }
+    
+    
+    /* Room for the close button (×) in the top-right corner. */
+    .kkw-band, .kkw-head.kkw-band { padding-right: 48px; }
+    .kkw-close {
+      position: absolute; top: 10px; right: 10px; z-index: 1;
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 28px; height: 28px; margin: 0; padding: 0; cursor: pointer;
+      color: var(--kkw-muted); background: none; border: none; border-radius: 999px;
+    }
+    .kkw-close:hover { color: var(--kkw-text); background: var(--kkw-tint-strong); }
+    .kkw-close svg { width: 16px; height: 16px; }
     .kkw-back {
       margin: 0; padding: 2px 8px 4px; cursor: pointer;
       font: 500 20px/1 var(--kkw-font); color: var(--kkw-muted);
@@ -236,7 +246,7 @@ export function buildCss(config: FeedbackConfig): string {
     .kkw-consent small { display: block; margin-top: 2px; font-size: 11px; color: var(--kkw-muted); }
     .kkw-note { margin: -8px 0 12px; font-size: 11px; color: var(--kkw-muted); }
     .kkw-submit {
-      display: block; width: 100%; margin: 8px 0 0; padding: 9px; cursor: pointer;
+      display: block; width: 100%; margin: 8px 0 0; padding: 8px; cursor: pointer;
       font: 600 13px/1.2 var(--kkw-font);
       background: var(--kkw-accent); color: var(--kkw-accent-text);
       border: none; border-radius: var(--kkw-radius-sm);
@@ -267,7 +277,7 @@ export function buildCss(config: FeedbackConfig): string {
     .kkw-brand:hover { color: var(--kkw-text); }
     .kkw-brand-mark { width: 12px; height: 12px; opacity: 0.7; }
 
-    .kkw-btn:focus-visible, .kkw-type:focus-visible, .kkw-back:focus-visible,
+    .kkw-btn:focus-visible, .kkw-type:focus-visible, .kkw-back:focus-visible, .kkw-close:focus-visible,
     .kkw-submit:focus-visible, .kkw-link-btn:focus-visible, .kkw-consent input:focus-visible,
     .kkw-brand:focus-visible {
       outline: 2px solid var(--kkw-accent); outline-offset: 2px;
@@ -276,5 +286,9 @@ export function buildCss(config: FeedbackConfig): string {
       .kkw-type, .kkw-type-icon, .kkw-star-icon, .kkw-consent { transition: none; }
       .kkw-consent.kkw-pulse { animation: none; }
     }
+      @media (pointer: coarse) {
+      .kkw-textarea, .kkw-input { font-size: 16px; }
+    }
   `;
+  return css.replace(/font: ([^;]*?) var\(--kkw-font\);/g, (_, spec: string) => fontRule(spec));
 }

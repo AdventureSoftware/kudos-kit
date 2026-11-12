@@ -27,7 +27,7 @@ export default async function ProjectsPage() {
 
       {manage && <AddProjectForm takenPrefixes={projects.map((p) => p.prefix)} />}
       <ProjectList projects={projects} manage={manage} />
-      {/*{manage && <NewAppSteps />}*/}
+      {manage && <NewAppSteps />}
     </div>
   );
 }

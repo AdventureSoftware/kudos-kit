@@ -6,7 +6,7 @@ import { renameProject, setProjectActive } from '@/app/(dashboard)/projects/acti
 import { NAME_MAX } from '@/lib/projects';
 import { cn } from '@/lib/cn';
 
-/** The name, with a Rename button that turns it into a small form. */
+
 export function ProjectName({ projectKey, name }: { projectKey: string; name: string }) {
   const [editing, setEditing] = useState(false);
   const [value, setValue] = useState(name);

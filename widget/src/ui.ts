@@ -129,10 +129,18 @@ export class FeedbackUI {
       if (e.key === 'Escape') { e.stopPropagation(); this.hidePanel(); this.button?.focus(); }
     });
 
+
+    const close = el('button', 'kkw-close');
+    close.type = 'button';
+    close.setAttribute('aria-label', 'Close');
+    close.title = 'Close';
+    close.innerHTML = svg('<path d="M6 6l12 12M18 6 6 18"/>', 'kkw-close-icon');
+    close.onclick = () => { this.hidePanel(); this.button?.focus(); };
+
     this.views.choose = this.buildChooseStep();
     this.views.write = this.buildWriteStep();
     this.views.done = this.buildDoneStep();
-    panel.append(this.views.choose, this.views.write, this.views.done);
+    panel.append(close, this.views.choose, this.views.write, this.views.done);
     if (this.config.branding !== false) panel.appendChild(this.buildBranding());
     this.showStep('choose');
     return panel;

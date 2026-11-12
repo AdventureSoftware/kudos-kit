@@ -19,7 +19,6 @@ async function projectCall(path: string, method: 'POST' | 'PATCH', body: object)
     const message = Array.isArray(data?.message) ? data.message.join(' ') : data?.message;
     return { error: message || 'Something went wrong. Please try again.' };
   }
-  // Other pages list projects too (Widget, the project filter on Feedback).
   revalidatePath('/', 'layout');
   return {};
 }

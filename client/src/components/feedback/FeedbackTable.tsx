@@ -1,25 +1,22 @@
 import Link from 'next/link';
-import { Badge, Card, EmptyState, Pagination, SortableTh, Stars, Table, Td, Th, Tr, typeTone } from '@/components/ui';
+import { Badge, Card, EmptyState, Pagination, SortableTh, Stars, Table, Td, Th, Tr, typeTone, LocalTime } from '@/components/ui';
 import { cn } from '@/lib/cn';
 import { feedbackHref, isFiltered, type FeedbackQuery, type SortField } from '@/lib/feedback-query';
 import { DeleteButton, StatusButton } from './FeedbackActions';
 import type { FeedbackListResponse } from './types';
 
-const dateFmt = new Intl.DateTimeFormat('en-GB', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
 
-/** Default direction when a column is first clicked: newest dates first, text A→Z. */
 const firstDir: Record<SortField, 'asc' | 'desc'> = { created_at: 'desc', project: 'asc', type: 'asc', status: 'asc' };
 
 interface FeedbackTableProps {
   data: FeedbackListResponse;
   query: FeedbackQuery;
-  /** Owners and admins only. */
   canDelete: boolean;
 }
 
 export function FeedbackTable({ data, query, canDelete }: FeedbackTableProps) {
 
-  /** Header link: toggles direction on the active column, otherwise starts with its natural order. */
+
   const sortHref = (field: SortField) =>
     feedbackHref(query, {
       sort: field,
@@ -84,7 +81,7 @@ export function FeedbackTable({ data, query, canDelete }: FeedbackTableProps) {
                 </p>
               </Td>
               <Td><StatusButton id={row.id} status={row.status} /></Td>
-              <Td className="whitespace-nowrap text-muted">{dateFmt.format(new Date(row.created_at))}</Td>
+              <Td className="whitespace-nowrap text-muted"><LocalTime value={row.created_at} /></Td>
               <Td className="text-right">{canDelete && <DeleteButton id={row.id} label={row.ref} />}</Td>
             </Tr>
           ))}

@@ -13,7 +13,6 @@ export default async function WidgetPage() {
   if (res.status === 401) redirect('/login');
   if (!res.ok) throw new Error(`API error: widget projects ${res.status}`);
   const projects = (await res.json()) as WidgetProject[];
-  // Public value (it ends up in every site's HTML). Set it in client/.env.local.
   const siteKey = process.env.TURNSTILE_SITE_KEY?.trim() || TURNSTILE_TEST_KEY;
 
   return (
