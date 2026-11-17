@@ -1,25 +1,42 @@
-# Weekly pull requests for outdated dependencies. Minor and patch updates are grouped
-# into one PR per folder, so there's less noise; major updates come one by one.
+# Weekly pull requests for outdated dependencies: bug-fix and minor updates only, grouped into
+# one PR per folder. Major versions (e.g. Prisma 7, TypeScript 7, Node 26) can break things, so
+# they're upgraded on purpose, one at a time, not proposed automatically.
 version: 2
 updates:
   - package-ecosystem: npm
     directory: /server
     schedule: { interval: weekly }
+    open-pull-requests-limit: 3
+    ignore:
+      - dependency-name: "*"
+        update-types: [version-update:semver-major]
     groups:
       minor-and-patch: { update-types: [minor, patch] }
   - package-ecosystem: npm
     directory: /client
     schedule: { interval: weekly }
+    open-pull-requests-limit: 3
+    ignore:
+      - dependency-name: "*"
+        update-types: [version-update:semver-major]
     groups:
       minor-and-patch: { update-types: [minor, patch] }
   - package-ecosystem: npm
     directory: /widget
     schedule: { interval: weekly }
+    open-pull-requests-limit: 3
+    ignore:
+      - dependency-name: "*"
+        update-types: [version-update:semver-major]
     groups:
       minor-and-patch: { update-types: [minor, patch] }
   - package-ecosystem: docker
     directories: [/server, /client]
     schedule: { interval: monthly }
+    ignore:
+      # node:22 → 24 → 26 is a deliberate upgrade; only patch images come automatically.
+      - dependency-name: node
+        update-types: [version-update:semver-major]
   - package-ecosystem: github-actions
     directory: /
     schedule: { interval: monthly }
