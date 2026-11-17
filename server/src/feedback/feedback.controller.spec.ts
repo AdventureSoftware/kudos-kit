@@ -16,7 +16,7 @@ describe('FeedbackController', () => {
   });
 
   it('calls service.submit with dto and ip', async () => {
-    const dto: any = { project: 'colorpage', type: 'bug', message: 'test', turnstileToken: 't', hp: '' };
+    const dto: any = { project: 'my-shop', type: 'bug', message: 'test', turnstileToken: 't', hp: '' };
     const req: any = { ip: '5.5.5.5' };
     await controller.submitFeedback(dto, req);
     expect(service.submit).toHaveBeenCalledWith(dto, '5.5.5.5');

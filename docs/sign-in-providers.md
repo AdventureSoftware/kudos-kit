@@ -17,7 +17,7 @@ Kudos Kit stays **invite-only** with either one:
   random address that can't match the invitation. People join first, then connect Apple
   on their Account page. After that it works whatever address Apple shows.
 
-The addresses below use `https://kudoskit.io`. Replace it with your own
+The addresses below use `https://feedback.example.com`. Replace it with your own
 address (`DOMAIN` in `.env`).
 
 ---
@@ -35,10 +35,10 @@ address (`DOMAIN` in `.env`).
    - Application type: **Web application**
    - Authorized JavaScript origins:
      - `http://localhost:3001`
-     - `https://kudoskit.io`
+     - `https://feedback.example.com`
    - Authorized redirect URIs:
      - `http://localhost:3001/api/auth/callback/google`
-     - `https://kudoskit.io/api/auth/callback/google`
+     - `https://feedback.example.com/api/auth/callback/google`
 4. Copy the client ID and secret into `.env` on the server (`server/.env` for local development):
 
    ```env
@@ -61,8 +61,8 @@ Apple does not accept `localhost`, so this can only be tried on the deployed sit
      (this is your `APPLE_SERVICES_ID`)
    - Register, open it again, tick **Sign in with Apple → Configure**:
      - Primary App ID: the App ID from step 2
-     - Domains: `kudoskit.io`
-     - Return URLs: `https://kudoskit.io/api/auth/callback/apple`
+     - Domains: `feedback.example.com`
+     - Return URLs: `https://feedback.example.com/api/auth/callback/apple`
    - Save.
 4. **Keys → +**:
    - Name `Kudos Kit sign in`, tick **Sign in with Apple → Configure** → the App ID from step 2

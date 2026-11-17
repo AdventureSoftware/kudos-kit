@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# Run before making the repository public: looks for passwords, keys and .env files
-# anywhere in the git history (not just the current files).
+# Looks for passwords, keys and .env files anywhere in the git history (not just the
+# current files). Run it before pushing, e.g. after adding new settings or scripts.
 #   ./scripts/check-secrets.sh
 set -uo pipefail
 cd "$(dirname "$0")/.."
@@ -43,8 +43,8 @@ fi
 
 if [[ $found -ne 0 ]]; then
   echo
-  echo "Something sensitive is in the history. Change those passwords/keys, and publish from a"
-  echo "fresh history (see DEPLOY.md, 'Publishing on GitHub')."
+  echo "Something sensitive is in the history. If it was pushed, treat it as public: change those"
+  echo "passwords/keys right away. If it wasn't pushed yet, remove it from the commit first."
   exit 1
 fi
 echo

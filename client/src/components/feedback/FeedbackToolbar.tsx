@@ -118,7 +118,7 @@ export function FeedbackToolbar({ query, projects, counts }: FeedbackToolbarProp
             type="search"
             value={text}
             onChange={(e) => setText(e.target.value)}
-            placeholder="Search text, email or CP-12"
+            placeholder="Search text, email or MS-12"
             maxLength={100}
             className="h-9 w-full rounded-ui border border-border bg-surface pl-9 pr-8 text-sm text-text placeholder:text-muted focus:border-accent focus:outline-none"
           />

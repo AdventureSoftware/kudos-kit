@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
 # Creates .env for a new Kudos Kit server, with fresh random secrets. Run once.
-#   ./scripts/setup.sh kudoskit.io
+#   ./scripts/setup.sh feedback.example.com
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
 domain="${1:-}"
 if [[ -z "$domain" || "$domain" == http* || "$domain" == */* ]]; then
-  echo "Usage: ./scripts/setup.sh your.domain      (just the name, e.g. kudoskit.io)" >&2
+  echo "Usage: ./scripts/setup.sh your.domain      (just the name, e.g. feedback.example.com)" >&2
   exit 1
 fi
 if [[ -e .env ]]; then

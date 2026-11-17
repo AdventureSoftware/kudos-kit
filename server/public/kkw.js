@@ -105,7 +105,9 @@
     /* Step 2: the form */
     .kkw-head { display: flex; align-items: center; gap: 4px; }
     .kkw-head.kkw-band { padding: 12px 20px 12px 12px; }
-        /* Room for the close button (\xD7) in the top-right corner. */
+    
+    
+    /* Room for the close button (\xD7) in the top-right corner. */
     .kkw-band, .kkw-head.kkw-band { padding-right: 48px; }
     .kkw-close {
       position: absolute; top: 10px; right: 10px; z-index: 1;

@@ -6,6 +6,8 @@ import { Features } from './Features';
 import { HowItWorks } from './HowItWorks';
 
 
+const GITHUB_URL = 'https://github.com/AdventureSoftware/kudos-kit';
+
 export function LandingPage({ retentionDays }: { retentionDays: number }) {
   return (
     <div className="flex flex-1 flex-col text-base">
@@ -33,6 +35,7 @@ function LandingHeader() {
         <nav className="flex items-center gap-1 text-sm sm:gap-2">
           <a href="#features" className="hidden rounded-ui px-3 py-2 text-muted hover:text-text sm:inline-block">Features</a>
           <a href="#how-it-works" className="hidden rounded-ui px-3 py-2 text-muted hover:text-text sm:inline-block">How it works</a>
+          <a href={GITHUB_URL} className="hidden rounded-ui px-3 py-2 text-muted hover:text-text sm:inline-block">GitHub</a>
           <Link href="/privacy" className="hidden rounded-ui px-3 py-2 text-muted hover:text-text md:inline-block">Privacy</Link>
           <Link href="/login" className={buttonClass('primary', 'md', 'ml-2')}>Sign in</Link>
         </nav>
@@ -93,10 +96,16 @@ function ClosingCta() {
           Kudos Kit is free and open source. Run it next to your other sites with Docker, and keep every message on
           your own server.
         </p>
-        <div className="mt-8 flex justify-center">
+        <div className="mt-8 flex flex-wrap justify-center gap-3">
+          <a
+            href={GITHUB_URL}
+            className="inline-flex h-11 items-center justify-center rounded-ui bg-white px-5 font-semibold text-[#9a3412] transition-colors hover:bg-white/90"
+          >
+            Get the code on GitHub
+          </a>
           <Link
             href="/login"
-            className="inline-flex h-11 items-center justify-center rounded-ui bg-white px-5 font-semibold text-[#9a3412] transition-colors hover:bg-white/90"
+            className="inline-flex h-11 items-center justify-center rounded-ui border border-white/60 px-5 font-semibold text-white transition-colors hover:bg-white/10"
           >
             Sign in to your inbox
           </Link>
@@ -115,6 +124,7 @@ function LandingFooter() {
           <span>· Open-source feedback software</span>
         </div>
         <nav className="flex gap-5">
+          <a href={GITHUB_URL} className="hover:text-text">GitHub</a>
           <Link href="/privacy" className="hover:text-text">Privacy</Link>
           <Link href="/login" className="hover:text-text">Sign in</Link>
         </nav>

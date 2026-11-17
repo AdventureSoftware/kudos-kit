@@ -3,10 +3,10 @@
  * added from the dashboard or from the command line looks the same.
  */
 
-/** What apps pass to the widget: `project: 'colorpage'`. Lower case, digits and dashes. Never changes. */
+/** What apps pass to the widget: `project: 'my-shop'`. Lower case, digits and dashes. Never changes. */
 export const KEY_PATTERN = /^[a-z0-9][a-z0-9-]{0,39}$/;
 
-/** Short code in references such as CP-12. A letter, then up to 4 letters or digits. Never changes. */
+/** Short code in references such as MS-12. A letter, then up to 4 letters or digits. Never changes. */
 export const PREFIX_PATTERN = /^[A-Za-z][A-Za-z0-9]{0,4}$/;
 
 export const NAME_MAX = 80;

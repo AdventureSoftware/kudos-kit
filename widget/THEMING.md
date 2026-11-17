@@ -5,7 +5,7 @@
 1. **Choose a type**: Bug, Idea, Praise or Other. Nothing is preselected, so every report is
    sorted on purpose.
 2. **Write**: the message box adapts to the type. Praise, Idea and Other start with optional
-   1–5 stars ("How would you rate Colorpage?", using `appName`; never shown for bugs). Praise
+   1–5 stars ("How would you rate My Shop?", using `appName`; never shown for bugs). Praise
    also shows an optional "You may show my message publicly as a testimonial" box with an
    optional name.
    With 4 or 5 stars on Praise, the testimonial box is highlighted ("Glad you like it! May we
@@ -36,10 +36,10 @@ A small "Powered by Kudos Kit" line sits at the bottom of the panel; `branding: 
 
 ```js
 Feedback.init({
-  project: 'colorpage',
+  project: 'my-shop',
   turnstileSiteKey: '…',
-  privacyUrl: 'https://colorpage.app/privacy',
-  appName: 'Colorpage',    // "How would you rate Colorpage?" (default: "your experience")
+  privacyUrl: 'https://myshop.example/privacy',
+  appName: 'My Shop',      // "How would you rate My Shop?" (default: "your experience")
   branding: true,          // "Powered by Kudos Kit" line (default: true)
   theme: {
     mode: 'auto',          // 'light' (default) | 'dark' | 'auto' (follows the OS)

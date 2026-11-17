@@ -4,7 +4,7 @@ import { ConfigModule } from '@nestjs/config';
 import { NotificationService } from './notification.service';
 import configuration from '../config/configuration';
 
-const payload = { project: 'colorpage', type: 'bug', message: 'Something broke', id: '42' };
+const payload = { project: 'my-shop', type: 'bug', message: 'Something broke', id: '42' };
 
 describe('NotificationService', () => {
   let service: NotificationService;

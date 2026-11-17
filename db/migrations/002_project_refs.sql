@@ -1,5 +1,5 @@
 -- 002_project_refs.sql
--- Per-project references for feedback, e.g. CP-12 = the 12th report for Colorpage.
+-- Per-project references for feedback, e.g. MS-12 = the 12th report for the project "My Shop".
 --
 -- Applied automatically by db/migrate.sh (safe to run again).
 -- Existing feedback is numbered in the order it was received.
@@ -15,7 +15,7 @@ ALTER TABLE feedback ADD COLUMN IF NOT EXISTS number integer;
 -- 2. Prefixes -----------------------------------------------------------------
 
 -- Derives a unique prefix from a project key when none is given:
--- 'colorpage' -> 'CO', then 'CO2', 'CO3' ... if taken. Letters only, max 5 characters.
+-- 'my-shop' -> 'MY', then 'MY2', 'MY3' ... if taken. Letters only, max 5 characters.
 CREATE OR REPLACE FUNCTION kk_unique_prefix(p_key text, p_exclude text DEFAULT NULL)
 RETURNS text LANGUAGE plpgsql AS $$
 DECLARE
@@ -47,7 +47,9 @@ DROP TRIGGER IF EXISTS projects_prefix ON projects;
 CREATE TRIGGER projects_prefix BEFORE INSERT OR UPDATE OF prefix ON projects
   FOR EACH ROW EXECUTE FUNCTION kk_project_prefix();
 
--- Chosen prefixes for the existing projects (only where none is set yet).
+-- Chosen prefixes for the projects of the first installation (only where none is set yet).
+-- On any other database these three lines change nothing. Kept because released migrations
+-- are never edited in ways that change what they do.
 UPDATE projects SET prefix = 'CP' WHERE key = 'colorpage'    AND prefix IS NULL;
 UPDATE projects SET prefix = 'PS' WHERE key = 'productscene' AND prefix IS NULL;
 UPDATE projects SET prefix = 'BP' WHERE key = 'bizpage'      AND prefix IS NULL;

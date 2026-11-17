@@ -45,7 +45,7 @@ choose to continue. Create the owner account, then try the **Widget** page. When
 - The domain's DNS **A record** points at the server (and an **AAAA** record if it has IPv6):
 
   ```bash
-  dig +short kudoskit.io        # must print the server's IP
+  dig +short feedback.example.com        # must print the server's IP
   ```
 - With nginx: `certbot` with its nginx plugin (`sudo apt install certbot python3-certbot-nginx`).
 - Ports 3100 and 3101 free on the server (`ss -ltn | grep -E ':310[01]'` prints nothing),
@@ -57,14 +57,14 @@ choose to continue. Create the owner account, then try the **Widget** page. When
 
 ```bash
 sudo mkdir -p /opt/kudoskit && sudo chown "$USER" /opt/kudoskit
-git clone https://github.com/<org>/kudos-kit.git /opt/kudoskit
+git clone https://github.com/AdventureSoftware/kudos-kit.git /opt/kudoskit
 cd /opt/kudoskit
 ```
 
 ## 2. Settings
 
 ```bash
-./scripts/setup.sh kudoskit.io
+./scripts/setup.sh feedback.example.com
 ```
 
 This creates `.env` (readable only by you) with new random database passwords and
@@ -77,6 +77,7 @@ the session secret. Then open `.env` and fill in the rest; every setting is expl
 | `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` | "Continue with Google" (optional). See `docs/sign-in-providers.md`. |
 | `APPLE_…` | "Continue with Apple" (optional). Put the `.p8` key in `secrets/`, see step 2b. |
 | `PRIVACY_OPERATOR`, `PRIVACY_CONTACT_EMAIL`, `PRIVACY_HOSTING` | The public privacy page. |
+| `LANDING_PAGE` | Visitors who aren't signed in see a page introducing Kudos Kit at your address. Set `LANDING_PAGE=false` to send them straight to the sign-in page. |
 
 ### 2b. Apple key (only with Apple sign-in)
 
@@ -111,13 +112,13 @@ sudo cp deploy/nginx/kudoskit.conf /etc/nginx/sites-available/kudoskit
 # Another domain or other ports? Edit server_name / 3100 / 3101 in that file now.
 sudo ln -s /etc/nginx/sites-available/kudoskit /etc/nginx/sites-enabled/
 sudo nginx -t && sudo systemctl reload nginx
-sudo certbot --nginx -d kudoskit.io
+sudo certbot --nginx -d feedback.example.com
 ```
 
 Certbot adds HTTPS to the file and renews the certificate automatically. Check:
 
 ```bash
-curl -sI https://kudoskit.io/login | head -1     # HTTP/2 200
+curl -sI https://feedback.example.com/login | head -1     # HTTP/2 200
 ```
 
 The nginx file limits feedback to 5 submissions per minute per visitor (burst of 10) and
@@ -126,18 +127,20 @@ own header instead would let anyone fake their IP and get around the limits.
 
 ## 5. Projects
 
-Each app or website that sends feedback is a project:
+Each app or website that sends feedback is a project. After you've created the owner account
+(next section), add projects on the dashboard's **Projects** page: a name, a key (used in the
+widget code) and a prefix for references such as MS-12. The **Widget** page then shows the code
+to paste into that site.
+
+From the command line, the same works with:
 
 ```bash
-./scripts/add-project.sh colorpage "Colorpage" CP
+./scripts/add-project.sh my-shop "My Shop" MS
 ```
-
-`CP` makes references like CP-12. In the dashboard, the **Widget** page then shows the code
-to paste into that site.
 
 ## 6. Owner account (do this right away)
 
-Open `https://kudoskit.io`. On a fresh install it shows **Create the owner account**: the
+Open `https://feedback.example.com`. On a fresh install it shows **Create the owner account**: the
 first person to fill it in becomes the owner, so do it as soon as the site is reachable.
 Everyone else joins by invitation (Team page).
 
@@ -186,31 +189,3 @@ docker compose exec db psql -U kudoskit -d feedback    # database shell
 - The database roles are least-privilege: the widget's role can only add feedback, and the
   dashboard's role can't change table structure.
 - Feedback older than `FEEDBACK_RETENTION_DAYS` (default 90) is deleted automatically every day.
-
----
-
-## Publishing on GitHub (for the maintainers)
-
-Before the repository goes public, check the whole git history for secrets:
-
-```bash
-./scripts/check-secrets.sh
-```
-
-If it finds anything (an old `.env`, a password in a SQL file), the simplest fix is to publish
-a **fresh history** with one commit, while keeping the private repository as it is:
-
-```bash
-git checkout --orphan public
-git add -A
-git commit -m "Kudos Kit"
-
-# Check just that branch, in a separate copy (the script scans every branch it can see):
-git clone --single-branch --branch public . /tmp/kudos-kit-public
-(cd /tmp/kudos-kit-public && ./scripts/check-secrets.sh)
-
-# Only when it says "Nothing found":
-git push git@github.com:<org>/kudos-kit.git public:main
-```
-
-Change any password or key that ever appeared in the old history, even after this.

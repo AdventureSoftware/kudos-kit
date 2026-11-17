@@ -11,7 +11,7 @@ model Project {
   key         String     @id
   name        String
   active      Boolean    @default(true)
-  /// Short code used in feedback references, e.g. "CP" in CP-12. Set by db/002_project_refs.sql.
+  /// Short code used in feedback references, e.g. "MS" in MS-12. Set by db/002_project_refs.sql.
   prefix      String     @unique
   /// Next per-project feedback number. Managed by a database trigger; never set it from the app.
   next_number Int        @default(1)
@@ -23,7 +23,7 @@ model Project {
 model Feedback {
   id               BigInt                @id @default(autoincrement())
   project          String
-  /// Per-project sequence number (CP-12 -> 12). Assigned by a database trigger on insert.
+  /// Per-project sequence number (MS-12 -> 12). Assigned by a database trigger on insert.
   number           Int
   /// bug | idea | praise | other
   type             String
