@@ -23,7 +23,7 @@ jobs:
       run:
         working-directory: widget
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: actions/setup-node@v4
         with:
           node-version: 22
@@ -47,7 +47,7 @@ jobs:
       run:
         working-directory: server
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: actions/setup-node@v4
         with:
           node-version: 22
@@ -84,7 +84,7 @@ jobs:
       DB_INGEST_PASSWORD: ci-ingest
       DB_ADMIN_PASSWORD: ci-admin
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Apply all migrations to an empty database
         run: sh db/migrate.sh
       - name: Run again (must be a no-op)
@@ -100,7 +100,7 @@ jobs:
       NEXT_TELEMETRY_DISABLED: 1
       NESTJS_API_URL: http://localhost:3000
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: actions/setup-node@v4
         with:
           node-version: 22
@@ -117,7 +117,7 @@ jobs:
     name: Docker images
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: docker-compose.yml is valid
         env:
           DOMAIN: feedback.example.com
