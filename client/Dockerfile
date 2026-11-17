@@ -2,7 +2,7 @@
 # the files it needs. Built from client/:   docker build client
 # Normally docker compose builds it (see docker-compose.yml).
 
-FROM node:22-alpine AS build
+FROM node:26-alpine AS build
 WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci --no-audit --no-fund
@@ -12,7 +12,7 @@ ARG NESTJS_API_URL=http://server:3000
 ENV NESTJS_API_URL=$NESTJS_API_URL NEXT_TELEMETRY_DISABLED=1
 RUN npm run build
 
-FROM node:22-alpine
+FROM node:26-alpine
 ENV NODE_ENV=production PORT=3001 HOSTNAME=0.0.0.0 NEXT_TELEMETRY_DISABLED=1
 WORKDIR /app
 COPY --from=build --chown=node:node /app/.next/standalone ./
