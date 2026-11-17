@@ -1,12 +1,9 @@
 import { cn } from '@/lib/cn';
 
-/** Round speech bubble with a tail at the bottom left (64×64 grid). */
 export const LOGO_BUBBLE = 'M32 6a24 24 0 1 1-12.6 44.4L8 56l4.6-11.6A24 24 0 0 1 32 6z';
-/** Right eye: a sparkle, the "kudos" moment. */
 export const LOGO_STAR =
   'M39 18c.7 3.8 2 5.1 5.8 5.8-3.8.7-5.1 2-5.8 5.8-.7-3.8-2-5.1-5.8-5.8 3.8-.7 5.1-2 5.8-5.8z';
 export const LOGO_SMILE = 'M23 33q9 9 18 0';
-/** Left eye (circle). */
 export const LOGO_EYE = { cx: 25, cy: 24, r: 3.2 };
 
 interface LogoMarkProps {
