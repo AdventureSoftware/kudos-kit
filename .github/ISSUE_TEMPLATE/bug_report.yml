@@ -1,0 +1,56 @@
+name: Bug report
+description: Something in Kudos Kit doesn't work as it should.
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time! **Security problems:** please don't open an issue; see
+        [SECURITY.md](https://github.com/AdventureSoftware/kudos-kit/blob/master/SECURITY.md) for how to report them privately.
+        Before posting logs or `.env` files, blank out passwords, keys and email addresses.
+  - type: dropdown
+    id: part
+    attributes:
+      label: Which part?
+      options:
+        - Widget (kkw.js on a website)
+        - Dashboard
+        - API / server
+        - Installation, Docker or updates
+        - Documentation
+    validations:
+      required: true
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened, and what did you expect?
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Open …
+        2. Click …
+        3. See …
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Kudos Kit version or commit
+      placeholder: e.g. v0.1.0, or the output of `git rev-parse --short HEAD`
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Browser and operating system (for widget and dashboard problems)
+      placeholder: e.g. Safari 18 on iOS 18
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs or console output
+      description: "`docker compose logs server --tail 100` or the browser console. Remove secrets first."
+      render: text

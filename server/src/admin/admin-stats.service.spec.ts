@@ -40,9 +40,9 @@ describe('AdminStatsService', () => {
         { type: 'praise', _count: { _all: 2 } },
       ])
       .mockResolvedValueOnce([
-        { project: 'colorpage', status: 'new', _count: { _all: 4 } },
-        { project: 'colorpage', status: 'done', _count: { _all: 1 } },
-        { project: 'bizpage', status: 'new', _count: { _all: 1 } },
+        { project: 'my-shop', status: 'new', _count: { _all: 4 } },
+        { project: 'my-shop', status: 'done', _count: { _all: 1 } },
+        { project: 'blog', status: 'new', _count: { _all: 1 } },
       ]);
     const today = new Date().toISOString().slice(0, 10);
     prisma.$queryRaw.mockResolvedValue([{ day: new Date(`${today}T00:00:00Z`), count: BigInt(3) }]);
@@ -67,10 +67,10 @@ describe('AdminStatsService', () => {
 
   it('averages the star ratings to one decimal, ignoring feedback without one', async () => {
     setup();
-    const s = await service.stats('colorpage');
+    const s = await service.stats('my-shop');
     expect(s.rating).toEqual({ average: 4.3, count: 3 });
     expect(prisma.feedback.aggregate).toHaveBeenCalledWith(expect.objectContaining({
-      where: { project: 'colorpage', rating: { not: null } },
+      where: { project: 'my-shop', rating: { not: null } },
     }));
   });
 
@@ -84,8 +84,8 @@ describe('AdminStatsService', () => {
     setup();
     const s = await service.stats();
     expect(s.byProject).toEqual([
-      { project: 'colorpage', total: 5, new: 4 },
-      { project: 'bizpage', total: 1, new: 1 },
+      { project: 'my-shop', total: 5, new: 4 },
+      { project: 'blog', total: 1, new: 1 },
     ]);
   });
 
@@ -99,11 +99,11 @@ describe('AdminStatsService', () => {
 
   it('applies the project filter to every query', async () => {
     setup();
-    await service.stats('colorpage');
-    expect(prisma.feedback.count).toHaveBeenNthCalledWith(1, { where: { project: 'colorpage' } });
-    expect(prisma.feedback.count).toHaveBeenNthCalledWith(4, { where: { project: 'colorpage', testimonial_ok: true } });
+    await service.stats('my-shop');
+    expect(prisma.feedback.count).toHaveBeenNthCalledWith(1, { where: { project: 'my-shop' } });
+    expect(prisma.feedback.count).toHaveBeenNthCalledWith(4, { where: { project: 'my-shop', testimonial_ok: true } });
     for (const call of prisma.feedback.groupBy.mock.calls) {
-      expect(call[0].where).toEqual({ project: 'colorpage' });
+      expect(call[0].where).toEqual({ project: 'my-shop' });
     }
   });
 });

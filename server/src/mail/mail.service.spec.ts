@@ -4,8 +4,8 @@ import { invitationEmail } from './invitation-email';
 import { passwordResetEmail } from './password-reset-email';
 
 const data = {
-  inviterName: 'Ioana <b>',
-  inviterEmail: 'ioana@example.com',
+  inviterName: 'Ana <b>',
+  inviterEmail: 'ana@example.com',
   role: 'admin',
   link: 'https://kudos.example.com/invite/abc123',
   expiresAt: new Date('2026-10-19T10:00:00Z'),
@@ -17,7 +17,7 @@ const service = (brevo?: { apiKey: string; fromEmail: string }) =>
 describe('invitationEmail', () => {
   it('names the inviter, role, link and expiry', () => {
     const { subject, text, html } = invitationEmail(data);
-    expect(subject).toBe('Ioana <b> invited you to Kudos Kit');
+    expect(subject).toBe('Ana <b> invited you to Kudos Kit');
     expect(text).toContain('as an admin');
     expect(text).toContain(data.link);
     expect(text).toContain('19 October 2026');
@@ -25,8 +25,8 @@ describe('invitationEmail', () => {
   });
 
   it('escapes names in the HTML', () => {
-    expect(invitationEmail(data).html).toContain('Ioana &lt;b&gt;');
-    expect(invitationEmail(data).html).not.toContain('Ioana <b>');
+    expect(invitationEmail(data).html).toContain('Ana &lt;b&gt;');
+    expect(invitationEmail(data).html).not.toContain('Ana <b>');
   });
 });
 

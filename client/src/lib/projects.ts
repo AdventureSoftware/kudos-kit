@@ -15,7 +15,7 @@ export const NAME_MAX = 80;
 
 export const canManageProjects = (role: string | null) => role === 'owner' || role === 'admin';
 
-/** "Colorpage AI" → "colorpage-ai". A suggestion only; people can type their own. */
+/** "My Shop" → "my-shop". A suggestion only; people can type their own. */
 export function suggestKey(name: string): string {
   return name
     .normalize('NFKD')
@@ -28,7 +28,7 @@ export function suggestKey(name: string): string {
 }
 
 /**
- * "Colorpage" → "CO", "Product Scene" → "PS", avoiding prefixes already taken (adds 2, 3…).
+ * "Shop" → "SH", "My Shop" → "MS", avoiding prefixes already taken (adds 2, 3…).
  * A suggestion only; people can type their own.
  */
 export function suggestPrefix(name: string, taken: readonly string[] = []): string {

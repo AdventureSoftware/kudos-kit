@@ -16,14 +16,14 @@ type SortField = (typeof SORTABLE)[number];
 const STATUSES = ['new', 'triaged', 'done'] as const;
 const TYPES = ['bug', 'idea', 'praise', 'other'] as const;
 const MAX_QUERY = 100;
-/** A reference such as "CP-12" (case-insensitive). */
+/** A reference such as "MS-12" (case-insensitive). */
 const REF_PATTERN = /^([A-Za-z][A-Za-z0-9]{0,4})-(\d{1,9})$/;
 
 interface ListFilters {
   project?: string;
   status?: string;
   type?: string;
-  /** Free-text search over message and email, or an exact reference like CP-12. */
+  /** Free-text search over message and email, or an exact reference like MS-12. */
   q?: string;
   /** "1": only praise the sender agreed may be shown publicly. */
   testimonial?: string;
@@ -35,7 +35,7 @@ interface ListFilters {
 const oneOf = <T extends string>(list: readonly T[], v?: string): T | undefined =>
   (list as readonly string[]).includes(v ?? '') ? (v as T) : undefined;
 
-/** Human-facing reference, e.g. "CP-12". */
+/** Human-facing reference, e.g. "MS-12". */
 const toRef = (prefix: string, number: number) => `${prefix}-${number}`;
 
 /** Parse a route id into a BigInt, rejecting anything that is not a positive integer. */
@@ -115,7 +115,7 @@ export class AdminFeedbackService {
     };
   }
 
-  /** "CP-12" finds that exact item; anything else matches message or email, ignoring case. */
+  /** "MS-12" finds that exact item; anything else matches message or email, ignoring case. */
   private searchWhere(q: string): Prisma.FeedbackWhereInput {
     const ref = REF_PATTERN.exec(q);
     if (ref) {

@@ -32,7 +32,7 @@ export function AddProjectForm({ takenPrefixes }: { takenPrefixes: string[] }) {
     setError(null);
     setAdded(null);
     if (!keyOk) return setError('The key may use lower-case letters, digits and dashes, starting with a letter or digit.');
-    if (!prefixOk) return setError('The prefix is a letter followed by up to 4 letters or digits, e.g. CP.');
+    if (!prefixOk) return setError('The prefix is a letter followed by up to 4 letters or digits, e.g. MS.');
     if (prefixTaken) return setError(`The prefix ${prefix} is already used by another project.`);
     const input = { name: name.trim(), key, prefix };
     start(async () => {
@@ -61,7 +61,7 @@ export function AddProjectForm({ takenPrefixes }: { takenPrefixes: string[] }) {
             maxLength={NAME_MAX}
             value={name}
             onChange={(e) => onName(e.target.value)}
-            placeholder="e.g. Colorpage"
+            placeholder="e.g. My Shop"
             autoComplete="off"
           />
         </div>
@@ -76,7 +76,7 @@ export function AddProjectForm({ takenPrefixes }: { takenPrefixes: string[] }) {
               setKeyEdited(true);
               setKey(e.target.value.toLowerCase().replace(/\s+/g, '-'));
             }}
-            placeholder="e.g. colorpage"
+            placeholder="e.g. my-shop"
             spellCheck={false}
             autoComplete="off"
             aria-invalid={key !== '' && !keyOk}
@@ -94,7 +94,7 @@ export function AddProjectForm({ takenPrefixes }: { takenPrefixes: string[] }) {
               setPrefixEdited(true);
               setPrefix(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ''));
             }}
-            placeholder="e.g. CP"
+            placeholder="e.g. MS"
             spellCheck={false}
             autoComplete="off"
             aria-invalid={prefix !== '' && (!prefixOk || prefixTaken)}

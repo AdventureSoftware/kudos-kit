@@ -7,7 +7,7 @@ in one dashboard, with the page, browser and (for bugs) the console log attached
 - **Widget**: one script, no dependencies, themable (colors, light/dark, position). Captures
   console messages and errors for bug reports, hiding things that look like passwords and tokens.
 - **Dashboard**: overview with daily stats, an inbox with filters, search and status
-  (new → triaged → done), references like `CP-12` per project.
+  (new → triaged → done), references like `MS-12` per project.
 - **Team**: invite-only accounts with owner / admin / member roles; email + password,
   optional Google and Apple sign-in; password reset.
 - **Privacy built in**: spam check with Cloudflare Turnstile, rate limits, a public privacy
@@ -17,7 +17,7 @@ in one dashboard, with the page, browser and (for bugs) the console log attached
 ## Quick start (Docker)
 
 ```bash
-git clone https://github.com/<org>/kudos-kit.git && cd kudos-kit
+git clone https://github.com/AdventureSoftware/kudos-kit.git && cd kudos-kit
 ./scripts/setup.sh feedback.example.com      # creates .env with fresh secrets
 docker compose up -d --build
 ```
@@ -37,7 +37,7 @@ The dashboard's **Widget** page lets you try it, adjust the look and copy the co
     project: 'my-app',
     turnstileSiteKey: '0x4AAAA…',
     privacyUrl: 'https://feedback.example.com/privacy',
-    theme: { mode: 'auto', accent: '#0e7490' },
+    theme: { mode: 'auto', accent: '#c2410c' },
     console: { enabled: true, max: 150, maxBytes: 50000, redact: true, sendOn: ['bug'] },
     // user: { id: currentUser.id, plan: currentUser.plan },
   });

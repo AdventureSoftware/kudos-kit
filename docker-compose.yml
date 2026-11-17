@@ -1,5 +1,5 @@
 
-#   ./scripts/setup.sh kudoskit.io     once: creates .env with fresh secrets
+#   ./scripts/setup.sh feedback.example.com     once: creates .env with fresh secrets
 #   docker compose up -d --build       start (or update) everything
 #
 # Without a reverse proxy already on the server, also start Caddy, which gets HTTPS
@@ -99,6 +99,7 @@ services:
     environment:
       NESTJS_API_URL: http://server:3000
       TURNSTILE_SITE_KEY: ${TURNSTILE_SITE_KEY:-}
+      LANDING_PAGE: ${LANDING_PAGE:-}
       PRIVACY_OPERATOR: ${PRIVACY_OPERATOR:-}
       PRIVACY_CONTACT_EMAIL: ${PRIVACY_CONTACT_EMAIL:-}
       PRIVACY_HOSTING: ${PRIVACY_HOSTING:-}

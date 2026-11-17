@@ -7,7 +7,7 @@ import { NotificationService } from './notification.service';
 import { CreateFeedbackDto, FeedbackType } from './dto/create-feedback.dto';
 
 const baseDto: CreateFeedbackDto = {
-  project: 'colorpage',
+  project: 'my-shop',
   type: FeedbackType.BUG,
   message: 'Something broke',
   turnstileToken: 'token',
@@ -63,7 +63,7 @@ describe('FeedbackService', () => {
     expect(prisma.$queryRaw).toHaveBeenCalledTimes(1);
     const [, ...args] = (prisma.$queryRaw as jest.Mock).mock.calls[0];
     expect(args).toEqual([
-      'colorpage', 'bug', 'Something broke', null,
+      'my-shop', 'bug', 'Something broke', null,
       null, // user_ctx
       null, // context
       null, // console_logs
@@ -75,7 +75,7 @@ describe('FeedbackService', () => {
     ]);
     await new Promise(r => setTimeout(r, 0));
     expect(notification.notify).toHaveBeenCalledWith(
-      expect.objectContaining({ project: 'colorpage', type: 'bug', testimonial: false }),
+      expect.objectContaining({ project: 'my-shop', type: 'bug', testimonial: false }),
     );
   });
 

@@ -21,7 +21,7 @@ const toRow = ({ _count, ...p }: Selected): ProjectRow => ({ ...p, reports: _cou
 
 /**
  * Adding, renaming and switching projects on or off from the dashboard.
- * Projects are never deleted here: their feedback and its CP-12 numbers depend on them.
+ * Projects are never deleted here: their feedback and its MS-12 numbers depend on them.
  * Turning one off makes the server refuse new feedback for it; existing feedback stays.
  */
 @Injectable()

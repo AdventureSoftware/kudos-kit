@@ -3,7 +3,7 @@ import { plainToInstance } from 'class-transformer';
 import { CreateFeedbackDto } from './create-feedback.dto';
 
 const valid = {
-  project: 'colorpage',
+  project: 'my-shop',
   type: 'bug',
   message: 'Something broke',
   turnstileToken: 'token123',

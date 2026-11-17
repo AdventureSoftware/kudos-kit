@@ -35,14 +35,14 @@ describe('AdminFeedbackService', () => {
 
   it('returns paginated feedback with serialized BigInt ids', async () => {
     (prisma.feedback.findMany as jest.Mock).mockResolvedValue([
-      { id: BigInt(1), project: 'colorpage', number: 12, type: 'bug', message: 'test',
+      { id: BigInt(1), project: 'my-shop', number: 12, type: 'bug', message: 'test',
         email: null, user_ctx: null, context: null, status: 'new', testimonial_ok: false, created_at: new Date(),
-        projectRef: { prefix: 'CP' } },
+        projectRef: { prefix: 'MS' } },
     ]);
     (prisma.feedback.count as jest.Mock).mockResolvedValue(1);
     const result = await service.list({});
     expect(result.rows[0].id).toBe('1');
-    expect(result.rows[0].ref).toBe('CP-12');
+    expect(result.rows[0].ref).toBe('MS-12');
     expect(result.rows[0]).not.toHaveProperty('projectRef');
     expect(result.total).toBe(1);
     expect(result.totalPages).toBe(1);
@@ -116,12 +116,12 @@ describe('AdminFeedbackService', () => {
     }));
   });
 
-  it('treats a reference like cp-12 as an exact lookup', async () => {
+  it('treats a reference like ms-12 as an exact lookup', async () => {
     (prisma.feedback.findMany as jest.Mock).mockResolvedValue([]);
     (prisma.feedback.count as jest.Mock).mockResolvedValue(0);
-    await service.list({ q: 'cp-12' });
+    await service.list({ q: 'ms-12' });
     expect(prisma.feedback.findMany).toHaveBeenCalledWith(expect.objectContaining({
-      where: { projectRef: { prefix: 'CP' }, number: 12 },
+      where: { projectRef: { prefix: 'MS' }, number: 12 },
     }));
   });
 
@@ -147,14 +147,14 @@ describe('AdminFeedbackService', () => {
 
   it('returns one item with console logs and errors', async () => {
     (prisma.feedback.findUnique as jest.Mock).mockResolvedValue({
-      id: BigInt(7), project: 'colorpage', number: 3, type: 'bug', message: 'broke',
+      id: BigInt(7), project: 'my-shop', number: 3, type: 'bug', message: 'broke',
       email: null, user_ctx: null, context: { url: 'https://x' },
       console_logs: [{ t: 1, level: 'error', msg: 'boom' }], errors: [], status: 'new', created_at: new Date(),
-      projectRef: { prefix: 'CP' },
+      projectRef: { prefix: 'MS' },
     });
     const item = await service.get('7');
     expect(item.id).toBe('7');
-    expect(item.ref).toBe('CP-3');
+    expect(item.ref).toBe('MS-3');
     expect(item.console_logs).toEqual([{ t: 1, level: 'error', msg: 'boom' }]);
     expect(prisma.feedback.findUnique).toHaveBeenCalledWith(
       expect.objectContaining({ where: { id: BigInt(7) } }),
@@ -220,10 +220,10 @@ describe('AdminFeedbackService', () => {
 
   it('returns only projects that have feedback, ordered alphabetically', async () => {
     (prisma.project.findMany as jest.Mock).mockResolvedValue([
-      { key: 'bizpage' }, { key: 'colorpage' },
+      { key: 'blog' }, { key: 'my-shop' },
     ]);
     const result = await service.listProjects();
-    expect(result).toEqual(['bizpage', 'colorpage']);
+    expect(result).toEqual(['blog', 'my-shop']);
     expect(prisma.project.findMany).toHaveBeenCalledWith(
       expect.objectContaining({ where: { feedback: { some: {} } } }),
     );

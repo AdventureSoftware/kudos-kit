@@ -1,0 +1,132 @@
+# Checks every push to master and every pull request:
+# widget tests + build, API lint/tests/build, database migrations, dashboard lint/build,
+# and both Docker images.
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  widget:
+    name: Widget
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: widget
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: widget/package-lock.json
+      - run: npm ci
+      - run: npm test
+      - run: npm run build
+      - name: server/public/kkw.js is up to date
+        working-directory: .
+        run: |
+          if ! git diff --quiet -- server/public/kkw.js; then
+            echo "::error file=server/public/kkw.js::kkw.js is out of date. Run 'npm run build' in widget/ and commit server/public/kkw.js."
+            exit 1
+          fi
+
+  server:
+    name: API
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: server
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: server/package-lock.json
+      - run: npm ci
+      - run: npx prisma generate
+      # Not blocking yet: the existing code has formatting and strict-typing findings to clean up first.
+      - name: Lint (not blocking yet)
+        continue-on-error: true
+        run: npx eslint "{src,test}/**/*.ts"
+      - run: npm test
+      - run: npm run build
+
+  database:
+    name: Migrations
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: feedback
+          POSTGRES_USER: kudoskit
+          POSTGRES_PASSWORD: ci-only
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U kudoskit -d feedback"
+          --health-interval 5s --health-timeout 3s --health-retries 20
+    env:
+      PGHOST: localhost
+      PGUSER: kudoskit
+      PGPASSWORD: ci-only
+      PGDATABASE: feedback
+      DB_INGEST_PASSWORD: ci-ingest
+      DB_ADMIN_PASSWORD: ci-admin
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply all migrations to an empty database
+        run: sh db/migrate.sh
+      - name: Run again (must be a no-op)
+        run: sh db/migrate.sh | tee second-run.txt && grep -q "(0 new migration(s) applied)" second-run.txt
+
+  client:
+    name: Dashboard
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: client
+    env:
+      NEXT_TELEMETRY_DISABLED: 1
+      NESTJS_API_URL: http://localhost:3000
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: client/package-lock.json
+      - run: npm ci
+      # Not blocking yet: three React rule findings in existing code to clean up first.
+      - name: Lint (not blocking yet)
+        continue-on-error: true
+        run: npm run lint
+      - run: npm run build
+
+  docker:
+    name: Docker images
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: docker-compose.yml is valid
+        env:
+          DOMAIN: feedback.example.com
+          POSTGRES_PASSWORD: x
+          DB_INGEST_PASSWORD: x
+          DB_ADMIN_PASSWORD: x
+          BETTER_AUTH_SECRET: x
+        run: docker compose --profile caddy config --quiet
+      - name: Build the API image
+        run: docker build -f server/Dockerfile -t kudoskit-server .
+      - name: Build the dashboard image
+        run: docker build --build-arg NESTJS_API_URL=http://server:3000 -t kudoskit-client client

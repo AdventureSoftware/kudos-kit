@@ -14,6 +14,6 @@ export class CreateProjectDto {
 
   /** Optional, like in add-project.sh: without it the database picks one from the key. */
   @IsOptional()
-  @Matches(PREFIX_PATTERN, { message: 'The prefix is a letter followed by up to 4 letters or digits, e.g. CP.' })
+  @Matches(PREFIX_PATTERN, { message: 'The prefix is a letter followed by up to 4 letters or digits, e.g. MS.' })
   prefix?: string;
 }
