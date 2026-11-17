@@ -26,7 +26,7 @@
     "@nestjs/platform-express": "^11.0.1",
     "@nestjs/serve-static": "^5.0.5",
     "@nestjs/throttler": "^6.5.0",
-    "@prisma/client": "^6.19.3",
+    "@prisma/client": "^7.10.1",
     "@thallesp/nestjs-better-auth": "^2.4.0",
     "better-auth": "^1.7.7",
     "class-transformer": "^0.5.1",
