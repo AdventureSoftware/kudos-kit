@@ -4,7 +4,7 @@
 # Normally you don't run this yourself: docker compose does (see docker-compose.yml).
 
 # 1. The widget: widget/build.mjs writes server/public/kkw.js
-FROM node:22-alpine AS widget
+FROM node:26-alpine AS widget
 WORKDIR /repo/widget
 COPY widget/package.json widget/package-lock.json ./
 RUN npm ci --no-audit --no-fund
@@ -12,7 +12,7 @@ COPY widget/ ./
 RUN mkdir -p ../server/public && npm run build
 
 # 2. The API
-FROM node:22-alpine AS build
+FROM node:26-alpine AS build
 RUN apk add --no-cache openssl
 WORKDIR /repo/server
 COPY server/package.json server/package-lock.json ./
@@ -24,7 +24,7 @@ RUN npx prisma generate \
  && npm prune --omit=dev --no-audit --no-fund
 
 # 3. What runs: compiled code and production dependencies only, as a non-root user
-FROM node:22-alpine
+FROM node:26-alpine
 RUN apk add --no-cache openssl
 ENV NODE_ENV=production PORT=3000
 WORKDIR /app
