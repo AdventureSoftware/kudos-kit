@@ -39,7 +39,7 @@ export default async function PrivacyPage() {
 
   return (
     <div className="mx-auto w-full max-w-2xl px-4 py-10 sm:px-6">
-      <Link href="/login" aria-label="Kudos Kit" className="inline-flex"><Logo size={28} /></Link>
+      <Link href="/" aria-label="Kudos Kit home" className="inline-flex"><Logo size={28} /></Link>
       <h1 className="mt-8 text-2xl font-semibold text-text">Privacy</h1>
       <p className="mt-1 text-muted">Last updated {LAST_UPDATED}</p>
 
@@ -130,7 +130,8 @@ export default async function PrivacyPage() {
       </div>
 
       <p className="mt-12 border-t border-border pt-6 text-xs text-muted">
-        Kudos Kit is open-source feedback software. <Link href="/login" className="hover:text-text">Sign in</Link>
+        <Link href="/" className="hover:text-text">Kudos Kit</Link> is open-source feedback software.{' '}
+        <Link href="/login" className="hover:text-text">Sign in</Link>
       </p>
     </div>
   );
