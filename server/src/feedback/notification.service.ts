@@ -32,6 +32,8 @@ export class NotificationService {
     const fromEmail = this.config.get<string>('brevo.fromEmail') ?? '';
     const toEmail = this.config.get<string>('brevo.toEmail') ?? '';
     const adminUrl = this.config.get<string>('adminUrl') ?? '';
+    // Email is optional: without Brevo settings there is no one to tell, so don't try.
+    if (!apiKey || !fromEmail || !toEmail) return;
 
     try {
       const res = await fetch('https://api.brevo.com/v3/smtp/email', {
