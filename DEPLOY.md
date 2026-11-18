@@ -68,7 +68,8 @@ cd /opt/kudoskit
 ```
 
 This creates `.env` (readable only by you) with new random database passwords and
-the session secret. Then open `.env` and fill in the rest; every setting is explained there.
+the session secret. Then open `.env` and fill in the rest; every setting is explained there
+and in [docs/configuration.md](docs/configuration.md).
 
 | Setting | Needed for |
 |---|---|
